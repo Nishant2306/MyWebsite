@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, createContext, useCo
 import { FaJava } from "react-icons/fa";
 import { FaAmazon } from "react-icons/fa";
 import { FaMicrosoft } from "react-icons/fa";
+import { LaptopVisual, InternVisual3D, FaceVisual } from "./components/ExperienceVisuals";
 import {
   SiPython,
   SiJavascript,
@@ -31,6 +32,7 @@ import {
   SiBlender
 } from "react-icons/si";
 import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
+import { RocketIcon, ClockIcon, BrainIcon, BoxIcon, StarBadgeIcon, ChartIcon, GradCapIcon, HandSignIcon } from "./components/ThemedIcons";
 import resumePdf from "./Nishant_Niranjan_Singh_Chaudhary_Resume.pdf";
 
 const ThemeContext = createContext();
@@ -185,24 +187,33 @@ const InteractiveBackground = () => {
         if (trailRef.current.length > MAX_TRAIL) trailRef.current.shift();
       }
 
-      if (mx > 0 && my > 0 && !isMobile) {
+       if (mx > 0 && my > 0 && !isMobile) {
+        // Cap speed influence to prevent blowout
+        const cappedSpeed = Math.min(mSpeed, 25);
+
         const fieldLines = 6;
         for (let i = 0; i < fieldLines; i++) {
           const angle = (i / fieldLines) * Math.PI * 2 + frame * 0.008;
           const innerR = 30 + Math.sin(frame * 0.02 + i) * 10;
-          const outerR = 100 + mSpeed * 3 + Math.sin(frame * 0.015 + i * 0.5) * 30;
+          const outerR = 80 + cappedSpeed * 1.5 + Math.sin(frame * 0.015 + i * 0.5) * 20;
           ctx.beginPath();
           ctx.arc(mx, my, innerR + (outerR - innerR) * 0.5, angle - 0.3, angle + 0.3);
-          ctx.strokeStyle = `${t.glow1}${0.08 + mSpeed * 0.005})`;
+          ctx.strokeStyle = `${t.glow1}${Math.min(0.12, 0.05 + cappedSpeed * 0.002)})`;
           ctx.lineWidth = 1.5;
           ctx.stroke();
         }
-        const grd = ctx.createRadialGradient(mx, my, 0, mx, my, 150 + mSpeed * 5);
-        grd.addColorStop(0, `${t.glow1}${0.06 + mSpeed * 0.004})`);
-        grd.addColorStop(0.5, `${t.glow2}${0.02})`);
+
+        // Circular glow instead of square fillRect
+        const glowRadius = 100 + cappedSpeed * 2;
+        const grd = ctx.createRadialGradient(mx, my, 0, mx, my, glowRadius);
+        grd.addColorStop(0, `${t.glow1}${Math.min(0.06, 0.03 + cappedSpeed * 0.001)})`);
+        grd.addColorStop(0.4, `${t.glow2}${0.012})`);
         grd.addColorStop(1, `${t.glow1}0)`);
         ctx.fillStyle = grd;
-        ctx.fillRect(mx - 200, my - 200, 400, 400);
+        // Use a circular path instead of fillRect
+        ctx.beginPath();
+        ctx.arc(mx, my, glowRadius, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       if (trailRef.current.length > 1 && !isMobile) {
@@ -759,7 +770,7 @@ const TimelineCard = ({ role, company, period, location, bullets, tech }) => {
   );
 };
 
-const ProjectCard = ({ title, tech, bullets, emoji }) => {
+const ProjectCard = ({ title, tech, bullets, icon }) => {
   const [hovered, setHovered] = useState(false);
   const { mode } = useTheme();
   const t = themes[mode];
@@ -784,10 +795,10 @@ const ProjectCard = ({ title, tech, bullets, emoji }) => {
       }}
     >
       <div style={{
-        position: "absolute", top: "-20px", right: "-20px",
-        fontSize: isMobile ? "70px" : "100px", opacity: hovered ? 0.15 : 0.05,
-        transition: "opacity 0.5s", filter: "blur(2px)",
-      }}>{emoji}</div>
+        position: "absolute", top: "-10px", right: "-10px",
+        opacity: hovered ? 0.2 : 0.08,
+        transition: "opacity 0.5s", filter: "blur(1px)",
+      }}>{icon && icon({ size: isMobile ? 80 : 110 })}</div>
       <div style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: "11px", color: t.accent2, letterSpacing: "1px", marginBottom: "12px",
@@ -974,7 +985,7 @@ export default function Portfolio() {
 
   const LINKEDIN_URL = "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/";
 
-  const navItems = ['About', 'Experience', 'Achievement', 'Projects','Skills', 'Education', 'Contact'];
+  const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
 
   return (
     <ThemeContext.Provider value={{ mode, toggle }}>
@@ -1033,9 +1044,9 @@ export default function Portfolio() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: t.navBg, 
-          backdropFilter: 'blur(20px)', 
-          borderBottom: '1px solid ' + t.border, 
+          background: t.navBg,
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid ' + t.border,
           transition: 'all 0.4s',
         }}
         >
@@ -1344,41 +1355,94 @@ export default function Portfolio() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             <FadeInSection delay={0.1}>
-              <TimelineCard
-                role="Software Analyst" company="Nomura Holdings"
-                period="July 2024 – July 2025" location="Mumbai, India"
-                tech="React.js · Node.js · Python · Java (Spring Boot) · Neo4j · Docker · Kubernetes"
-                bullets={[
-                  "Migrated a 40+ page enterprise portal from Angular to React, redesigning the UI and implementing caching to reduce load time by 84% for 200+ users.",
-                  "Developed Java Spring Boot microservices and RESTful APIs for Nomura's NCD Pipeline with CI/CD integration.",
-                  "Engineered an auto-onboarding API that cut setup time from 2–3 weeks to 5 minutes, saving 100+ engineering hours per team.",
-                  "Integrated an AI assistant and Neo4j graph database visualizations for 100+ applications for cross-domain insights.",
-                  "Optimized large-scale data processing, reduced API latency by 20%, and built a Python–Neo4j graph analysis tool.",
-                ]}
-              />
+              <div style={{ position: "relative" }}>
+                <TimelineCard
+                  role="Software Analyst" company="Nomura Holdings"
+                  period="July 2024 – July 2025" location="Mumbai, India"
+                  tech="React.js · Node.js · Python · Java (Spring Boot) · Neo4j · Docker · Kubernetes"
+                  bullets={[
+                    "Migrated a 40+ page enterprise portal from Angular to React, redesigning the UI and implementing caching to reduce load time by 84% for 200+ users.",
+                    "Developed Java Spring Boot microservices and RESTful APIs for Nomura's NCD Pipeline with CI/CD integration.",
+                    "Engineered an auto-onboarding API that cut setup time from 2–3 weeks to 5 minutes, saving 100+ engineering hours per team.",
+                    "Integrated an AI assistant and Neo4j graph database visualizations for 100+ applications for cross-domain insights.",
+                    "Optimized large-scale data processing, reduced API latency by 20%, and built a Python–Neo4j graph analysis tool.",
+                  ]}
+                />
+                {/* Visual accent — absolutely positioned, desktop only */}
+                {isDesktop && (
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    right: "-30px",
+                    transform: "translateY(-50%) translateX(55%)",
+                    width: "280px",
+                    height: "280px",
+                    opacity: 0.85,
+                    pointerEvents: "none",
+                  }}>
+                    <LaptopVisual />
+                  </div>
+                )}
+              </div>
             </FadeInSection>
+
+            {/* --- Nomura Intern --- */}
             <FadeInSection delay={0.2}>
-              <TimelineCard
-                role="Software Developer Intern" company="Nomura Holdings"
-                period="January 2024 – June 2024" location="Mumbai, India"
-                tech="Java · Pact Broker · CI/CD · React.js"
-                bullets={[
-                  "Authored unit and integration tests for Java APIs, implementing Pact Broker for contract testing, boosting coverage from 48% to 83%.",
-                  "Onboarded 10+ internal applications to the NCD2.0 CI/CD pipeline, reducing setup time from 2–3 days to under 1 hour.",
-                  "Redesigned the portal UI with 20+ reusable components, reducing insight extraction time by 30% for 1,000+ users.",
-                ]}
-              />
+              <div style={{ position: "relative" }}>
+                <TimelineCard
+                  role="Software Developer Intern" company="Nomura Holdings"
+                  period="January 2024 – June 2024" location="Mumbai, India"
+                  tech="Java · Pact Broker · CI/CD · React.js"
+                  bullets={[
+                    "Authored unit and integration tests for Java APIs, implementing Pact Broker for contract testing, boosting coverage from 48% to 83%.",
+                    "Onboarded 10+ internal applications to the NCD2.0 CI/CD pipeline, reducing setup time from 2–3 days to under 1 hour.",
+                    "Redesigned the portal UI with 20+ reusable components, reducing insight extraction time by 30% for 1,000+ users.",
+                  ]}
+                />
+                {isDesktop && (
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "-30px",
+                    transform: "translateY(-50%) translateX(-55%)",
+                    width: "280px",
+                    height: "280px",
+                    opacity: 0.85,
+                    pointerEvents: "none",
+                  }}>
+                    <InternVisual3D />
+                  </div>
+                )}
+              </div>
             </FadeInSection>
+
+            {/* --- Tata AR/VR --- */}
             <FadeInSection delay={0.3}>
-              <TimelineCard
-                role="AR/VR Developer" company="Tata Research Development and Design Centre"
-                period="May 2023 – July 2023" location="Pune, India"
-                tech="Blender · ReactJS · AR/VR · 3D Modeling"
-                bullets={[
-                  "Modeled a high-fidelity 3D human nasal cavity using Blender and medical imaging for surgical planning.",
-                  "Transformed the 3D model into an immersive AR/VR experience embedded in a ReactJS web platform for interactive surgical exploration.",
-                ]}
-              />
+              <div style={{ position: "relative" }}>
+                <TimelineCard
+                  role="AR/VR Developer" company="Tata Research Development and Design Centre"
+                  period="May 2023 – July 2023" location="Pune, India"
+                  tech="Blender · ReactJS · AR/VR · 3D Modeling"
+                  bullets={[
+                    "Modeled a high-fidelity 3D human nasal cavity using Blender and medical imaging for surgical planning.",
+                    "Transformed the 3D model into an immersive AR/VR experience embedded in a ReactJS web platform for interactive surgical exploration.",
+                  ]}
+                />
+                {isDesktop && (
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    right: "-30px",
+                    transform: "translateY(-50%) translateX(55%)",
+                    width: "280px",
+                    height: "280px",
+                    opacity: 0.85,
+                    pointerEvents: "none",
+                  }}>
+                    <FaceVisual />
+                  </div>
+                )}
+              </div>
             </FadeInSection>
           </div>
         </section>
@@ -1417,9 +1481,9 @@ export default function Portfolio() {
             }}>
               <div style={{
                 position: "absolute", top: "24px", right: "32px",
-                fontSize: isMobile ? "40px" : "64px", opacity: 0.12,
+                opacity: 0.2,
                 animation: "rocketPulse 3s ease-in-out infinite",
-              }}>🚀</div>
+              }}><RocketIcon size={isMobile ? 40 : 64} /></div>
 
               <div style={{
                 position: "absolute", top: 0, left: isMobile ? "20px" : "48px",
@@ -1507,13 +1571,18 @@ export default function Portfolio() {
                 border: `1px solid ${t.border}`,
               }}>
                 {[
-                  { icon: "⏱️", before: "5–10 days", after: "~10 seconds", label: "Per Project" },
-                  { icon: "🧠", before: "Manual YAML", after: "Smart Form", label: "5–7 Fields" },
-                  { icon: "📦", before: "One-by-one", after: "CSV Bulk", label: "Mass Onboard" },
-                  { icon: "💯", before: "Assigned task", after: "Self-initiated", label: "100% Ownership" },
+                  { icon: "clock", before: "5–10 days", after: "~10 seconds", label: "Per Project" },
+                  { icon: "brain", before: "Manual YAML", after: "Smart Form", label: "5–7 Fields" },
+                  { icon: "box", before: "One-by-one", after: "CSV Bulk", label: "Mass Onboard" },
+                  { icon: "star", before: "Assigned task", after: "Self-initiated", label: "100% Ownership" },
                 ].map((m, i) => (
                   <div key={i} style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: isMobile ? "22px" : "28px", marginBottom: "8px" }}>{m.icon}</div>
+                    <div style={{ marginBottom: "8px" }}>{{
+                      clock: <ClockIcon size={isMobile ? 22 : 28} />,
+                      brain: <BrainIcon size={isMobile ? 22 : 28} />,
+                      box: <BoxIcon size={isMobile ? 22 : 28} />,
+                      star: <StarBadgeIcon size={isMobile ? 22 : 28} />,
+                    }[m.icon]}</div>
                     <div style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: "10px", color: t.textMuted,
@@ -1562,7 +1631,7 @@ export default function Portfolio() {
           }}>
             <FadeInSection delay={0.1}>
               <ProjectCard title="Cue – Intent-Aware AI Workspace Agent"
-                tech="Gemini · React · MongoDB Atlas · MCP" emoji="🧠" gradient={t.accent}
+                tech="Gemini · React · MongoDB Atlas · MCP" icon={(props) => <BrainIcon {...props} />} gradient={t.accent}
                 bullets={[
                   "Predictive Chrome extension using Gemini and MongoDB Atlas that forecasts the user's next five tasks from browsing history.",
                   "Leverages Model Context Protocol for autonomous execution across 9+ Google Workspace tools with multimodal meeting summaries.",
@@ -1571,7 +1640,7 @@ export default function Portfolio() {
             </FadeInSection>
             <FadeInSection delay={0.2}>
               <ProjectCard title="DIVDASH"
-                tech="React.js · Node.js · Firebase · TensorFlow · AWS Bedrock" emoji="📊" gradient={t.accent2}
+                tech="React.js · Node.js · Firebase · TensorFlow · AWS Bedrock" icon={(props) => <ChartIcon {...props} />} gradient={t.accent2}
                 bullets={[
                   "Diversity & Inclusion metrics dashboard with AWS Bedrock for generative AI insights and NLP-powered summaries.",
                   "Real-time tracking and multilingual visualizations that improved decision-making speed by 30%.",
@@ -1580,7 +1649,7 @@ export default function Portfolio() {
             </FadeInSection>
             <FadeInSection delay={0.3}>
               <ProjectCard title="DISHA"
-                tech="Dart · Flutter · AWS SageMaker · Android Studio" emoji="🎓" gradient="#FFD700"
+                tech="Dart · Flutter · AWS SageMaker · Android Studio" icon={(props) => <GradCapIcon {...props} />} gradient="#FFD700"
                 bullets={[
                   "Android and web platform connecting 2,000+ students with 500+ professionals using ML models on AWS SageMaker.",
                   "Students posted 5,000+ questions and received multimedia responses from verified experts across domains.",
@@ -1589,7 +1658,7 @@ export default function Portfolio() {
             </FadeInSection>
             <FadeInSection delay={0.4}>
               <ProjectCard title="AID – Assistive Interface for the Deaf"
-                tech="Flutter · TensorFlow · Firebase · Blender" emoji="🤟" gradient="#00d4ff"
+                tech="Flutter · TensorFlow · Firebase · Blender" icon={(props) => <HandSignIcon {...props} />} gradient="#00d4ff"
                 bullets={[
                   "Android app using Flutter, Firebase, and TensorFlow to assist the hearing impaired in public settings.",
                   "Speech-to-sign ML model with 92% accuracy, converting voice to real-time animated hand gestures via Blender.",
@@ -1785,13 +1854,13 @@ export default function Portfolio() {
                 rel="noopener noreferrer"
                 download
                 style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: isMobile ? "11px" : "13px",
-                padding: isMobile ? "14px 20px" : "16px 36px",
-                borderRadius: "8px",
-                border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
-                color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
-              }}
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: isMobile ? "11px" : "13px",
+                  padding: isMobile ? "14px 20px" : "16px 36px",
+                  borderRadius: "8px",
+                  border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                  color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                }}
               >
                 Resume ↗
               </a>
