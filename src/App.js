@@ -1,4 +1,37 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
+import { FaJava } from "react-icons/fa";
+import { FaAmazon } from "react-icons/fa";
+import { FaMicrosoft } from "react-icons/fa";
+import {
+  SiPython,
+  SiJavascript,
+  SiReact,
+  SiNodedotjs,
+  SiTypescript,
+  SiDart,
+  SiFlutter,
+  SiAngular,
+  SiMysql,
+  SiScala,
+  SiFlask,
+  SiHtml5,
+  SiCss,
+  SiGooglecloud,
+  SiDocker,
+  SiKubernetes,
+  SiTensorflow,
+  SiFirebase,
+  SiNeo4J,
+  SiMongodb,
+  SiGrafana,
+  SiGit,
+  SiJenkins,
+  SiGitlab,
+  SiFigma,
+  SiBlender
+} from "react-icons/si";
+import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
+import resumePdf from "./Nishant_Niranjan_Singh_Chaudhary_Resume.pdf";
 
 const ThemeContext = createContext();
 const useTheme = () => useContext(ThemeContext);
@@ -540,6 +573,47 @@ const SkillOrb = ({ name, color }) => {
   const { mode } = useTheme();
   const t = themes[mode];
 
+  const getTechIcon = (label) => {
+    const key = label.toLowerCase();
+    if (key.includes("java / spring")) return FaJava;
+    if (key === "java" || key.startsWith("java ")) return FaJava;
+    if (key.includes("python")) return SiPython;
+    if (key.includes("javascript")) return SiJavascript;
+    if (key.includes("react")) return SiReact;
+    if (key.includes("node.js") || key.includes("nodejs")) return SiNodedotjs;
+    if (key.includes("typescript")) return SiTypescript;
+    if (key.includes("dart")) return SiDart;
+    if (key.includes("flutter")) return SiFlutter;
+    if (key.includes("angular")) return SiAngular;
+    if (key === "sql") return SiMysql;
+    if (key.includes("scala")) return SiScala;
+    if (key.includes("flask")) return SiFlask;
+    if (key.includes("html")) return SiHtml5;
+    if (key.includes("css")) return SiCss;
+    if (key.includes("aws")) return FaAmazon;
+    if (key.includes("google cloud")) return SiGooglecloud;
+    if (key.includes("microsoft azure") || key === "azure") return FaMicrosoft;
+    if (key.includes("docker")) return SiDocker;
+    if (key.includes("kubernetes")) return SiKubernetes;
+    if (key.includes("tensorflow")) return SiTensorflow;
+    if (key.includes("firebase")) return SiFirebase;
+    if (key.includes("neo4j")) return SiNeo4J;
+    if (key.includes("mongodb")) return SiMongodb;
+    if (key.includes("grafana")) return SiGrafana;
+    if (key === "git") return SiGit;
+    if (key.includes("jenkins")) return SiJenkins;
+    if (key.includes("gitlab")) return SiGitlab;
+    if (key.includes("figma")) return SiFigma;
+    if (key.includes("blender")) return SiBlender;
+    if (key.includes("machine learning")) return FaBrain;
+    if (key.includes("agile")) return FaUsersCog;
+    if (key.includes("ar / vr") || key.includes("ar/vr")) return FaVrCardboard;
+    if (key.includes("model context protocol") || key.includes("crewai")) return FaCubes;
+    return null;
+  };
+
+  const Icon = getTechIcon(name);
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -565,6 +639,11 @@ const SkillOrb = ({ name, color }) => {
         transition: "all 0.3s",
         flexShrink: 0,
       }} />
+      {Icon && (
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color, fontSize: 14 }}>
+          <Icon />
+        </span>
+      )}
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: "12px",
@@ -579,12 +658,42 @@ const SkillOrb = ({ name, color }) => {
 
 const TimelineCard = ({ role, company, period, location, bullets, tech }) => {
   const [hovered, setHovered] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { mode } = useTheme();
   const t = themes[mode];
   const { isMobile } = useResponsive();
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!cardRef.current) return;
+      const rect = cardRef.current.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const center = rect.top + rect.height / 2;
+      const distanceFromCenter = Math.abs(center - vh / 2);
+      let p = 1 - distanceFromCenter / (vh / 1.2);
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      setScrollProgress(p);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  const variant =
+    role.toLowerCase().includes("ar/vr") || company.toLowerCase().includes("tata")
+      ? "arvr"
+      : "default";
 
   return (
     <div
+      ref={cardRef}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -661,13 +770,17 @@ const ProjectCard = ({ title, tech, bullets, emoji }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        padding: isMobile ? "24px 20px" : "32px", borderRadius: "16px",
+        padding: isMobile ? "24px 20px" : "32px",
+        borderRadius: "16px",
         border: `1px solid ${hovered ? `${t.accent}40` : t.border}`,
         background: hovered ? t.surfaceHover : t.cardBg,
         transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
         transform: hovered ? "translateY(-6px)" : "translateY(0)",
         boxShadow: hovered ? "0 24px 60px rgba(0,0,0,0.2)" : "none",
-        cursor: "default", position: "relative", overflow: "hidden",
+        cursor: "default",
+        position: "relative",
+        overflow: "hidden",
+        minHeight: isMobile ? "260px" : "320px",
       }}
     >
       <div style={{
@@ -1021,7 +1134,10 @@ export default function Portfolio() {
                 <GlitchText text="Nishant" /><br />
                 <span style={{
                   background: `linear-gradient(135deg, ${t.accent}, ${t.accent2})`,
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  display: "inline-block",
+                  padding: isMobile ? "0 14px" : 0,
                 }}>Chaudhary</span>
               </h1>
             </div>
@@ -1075,6 +1191,28 @@ export default function Portfolio() {
                 letterSpacing: "1px", textTransform: "uppercase",
                 cursor: "pointer", textDecoration: "none", transition: "all 0.3s",
               }}>LinkedIn ↗</a>
+              <a
+                href={resumePdf}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: isMobile ? "12px" : "13px",
+                  padding: isMobile ? "12px 24px" : "14px 32px",
+                  borderRadius: "8px",
+                  border: `1px solid ${t.borderHover}`,
+                  background: t.surface,
+                  color: t.textSecondary,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  transition: "all 0.3s",
+                }}
+              >
+                Resume ↗
+              </a>
             </div>
           </div>
 
@@ -1641,6 +1779,22 @@ export default function Portfolio() {
                 border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
                 color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
               }}>LinkedIn ↗</a>
+              <a
+                href={resumePdf}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: isMobile ? "11px" : "13px",
+                padding: isMobile ? "14px 20px" : "16px 36px",
+                borderRadius: "8px",
+                border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+              }}
+              >
+                Resume ↗
+              </a>
             </div>
           </FadeInSection>
 
