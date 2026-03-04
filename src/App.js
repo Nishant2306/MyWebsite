@@ -1126,7 +1126,7 @@ export default function Portfolio() {
             }}>
               <h1 style={{
                 fontFamily: "'Syne', sans-serif",
-                fontSize: isMobile ? "clamp(36px, 12vw, 52px)" : "clamp(48px, 7vw, 88px)",
+                fontSize: isMobile ? "" : "clamp(48px, 7vw, 88px)",
                 fontWeight: 800,
                 lineHeight: 1.05, margin: "0 0 24px 0",
                 letterSpacing: isMobile ? "-1px" : "-2px",
