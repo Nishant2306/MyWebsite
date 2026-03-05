@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
-import { FaJava } from "react-icons/fa";
-import { FaAmazon } from "react-icons/fa";
-import { FaMicrosoft } from "react-icons/fa";
+import { FaJava, FaAmazon, FaMicrosoft, FaGithub, FaLinkedinIn, FaFileAlt, FaEnvelope, FaPhoneAlt, FaPaperPlane } from "react-icons/fa";
 import { LaptopVisual, InternVisual3D, FaceVisual } from "./components/ExperienceVisuals";
 import {
   SiPython,
@@ -188,7 +186,6 @@ const InteractiveBackground = () => {
       }
 
        if (mx > 0 && my > 0 && !isMobile) {
-        // Cap speed influence to prevent blowout
         const cappedSpeed = Math.min(mSpeed, 25);
 
         const fieldLines = 6;
@@ -202,15 +199,12 @@ const InteractiveBackground = () => {
           ctx.lineWidth = 1.5;
           ctx.stroke();
         }
-
-        // Circular glow instead of square fillRect
         const glowRadius = 100 + cappedSpeed * 2;
         const grd = ctx.createRadialGradient(mx, my, 0, mx, my, glowRadius);
         grd.addColorStop(0, `${t.glow1}${Math.min(0.06, 0.03 + cappedSpeed * 0.001)})`);
         grd.addColorStop(0.4, `${t.glow2}${0.012})`);
         grd.addColorStop(1, `${t.glow1}0)`);
         ctx.fillStyle = grd;
-        // Use a circular path instead of fillRect
         ctx.beginPath();
         ctx.arc(mx, my, glowRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -579,10 +573,11 @@ const TypeWriter = ({ texts, speed = 80 }) => {
   );
 };
 
-const SkillOrb = ({ name, color }) => {
+const SkillOrb = ({ name, color, isMobile }) => {
   const [hovered, setHovered] = useState(false);
   const { mode } = useTheme();
   const t = themes[mode];
+  const isAwsSkill = name.startsWith("AWS (Bedrock");
 
   const getTechIcon = (label) => {
     const key = label.toLowerCase();
@@ -634,6 +629,7 @@ const SkillOrb = ({ name, color }) => {
         alignItems: "center",
         gap: "8px",
         padding: "8px 16px",
+        maxWidth: isMobile && isAwsSkill ? "100%" : undefined,
         borderRadius: "40px",
         border: `1px solid ${hovered ? color : t.border}`,
         background: hovered ? `${color}15` : t.surface,
@@ -661,7 +657,8 @@ const SkillOrb = ({ name, color }) => {
         color: hovered ? t.text : t.textSecondary,
         letterSpacing: "0.5px",
         transition: "color 0.3s",
-        whiteSpace: "nowrap",
+        whiteSpace: isMobile && isAwsSkill ? "normal" : "nowrap",
+        overflowWrap: isMobile && isAwsSkill ? "anywhere" : "normal",
       }}>{name}</span>
     </div>
   );
@@ -984,6 +981,7 @@ export default function Portfolio() {
   ];
 
   const LINKEDIN_URL = "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/";
+  const GITHUB_URL = "https://github.com/Nishant2306?tab=repositories";
 
   const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
 
@@ -1191,7 +1189,8 @@ export default function Portfolio() {
                 fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase",
                 cursor: "pointer", textDecoration: "none", transition: "all 0.3s",
                 boxShadow: `0 0 30px ${t.accent}30`,
-              }}>Get in Touch</a>
+                display: "inline-flex", alignItems: "center", gap: "8px",
+              }}><FaPaperPlane style={{ fontSize: "14px" }} /> Get in Touch</a>
               <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: isMobile ? "12px" : "13px",
@@ -1201,7 +1200,8 @@ export default function Portfolio() {
                 background: t.surface, color: t.textSecondary,
                 letterSpacing: "1px", textTransform: "uppercase",
                 cursor: "pointer", textDecoration: "none", transition: "all 0.3s",
-              }}>LinkedIn ↗</a>
+                display: "inline-flex", alignItems: "center", gap: "8px",
+              }}><FaLinkedinIn style={{ fontSize: "14px" }} /> LinkedIn ↗</a>
               <a
                 href={resumePdf}
                 target="_blank"
@@ -1220,10 +1220,22 @@ export default function Portfolio() {
                   cursor: "pointer",
                   textDecoration: "none",
                   transition: "all 0.3s",
+                  display: "inline-flex", alignItems: "center", gap: "8px",
                 }}
               >
-                Resume ↗
+                <FaFileAlt style={{ fontSize: "14px" }} /> Resume ↗
               </a>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: isMobile ? "12px" : "13px",
+                padding: isMobile ? "12px 24px" : "14px 32px",
+                borderRadius: "8px",
+                border: `1px solid ${t.borderHover}`,
+                background: t.surface, color: t.textSecondary,
+                letterSpacing: "1px", textTransform: "uppercase",
+                cursor: "pointer", textDecoration: "none", transition: "all 0.3s",
+                display: "inline-flex", alignItems: "center", gap: "8px",
+              }}><FaGithub style={{ fontSize: "14px" }} /> GitHub ↗</a>
             </div>
           </div>
 
@@ -1368,7 +1380,6 @@ export default function Portfolio() {
                     "Optimized large-scale data processing, reduced API latency by 20%, and built a Python–Neo4j graph analysis tool.",
                   ]}
                 />
-                {/* Visual accent — absolutely positioned, desktop only */}
                 {isDesktop && (
                   <div style={{
                     position: "absolute",
@@ -1386,7 +1397,6 @@ export default function Portfolio() {
               </div>
             </FadeInSection>
 
-            {/* --- Nomura Intern --- */}
             <FadeInSection delay={0.2}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
@@ -1416,7 +1426,6 @@ export default function Portfolio() {
               </div>
             </FadeInSection>
 
-            {/* --- Tata AR/VR --- */}
             <FadeInSection delay={0.3}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
@@ -1698,7 +1707,7 @@ export default function Portfolio() {
                 }}>{cat.title}</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                   {cat.skills.map((skill, si) => (
-                    <SkillOrb key={si} name={skill.name} color={skill.color} />
+                    <SkillOrb key={si} name={skill.name} color={skill.color} isMobile={isMobile} />
                   ))}
                 </div>
               </div>
@@ -1817,54 +1826,131 @@ export default function Portfolio() {
               I'm always open to exciting opportunities, collaborations, and conversations about tech.
             </p>
 
-            <div style={{
-              display: "flex", gap: isMobile ? "12px" : "16px",
-              justifyContent: "center", flexWrap: "wrap",
-            }}>
-              <a href="mailto:nishantchaudhary0512@gmail.com" style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: isMobile ? "11px" : "13px",
-                padding: isMobile ? "14px 20px" : "16px 36px",
-                borderRadius: "8px",
-                background: `linear-gradient(135deg, ${t.accent}, ${mode === "dark" ? "#00d4a0" : "#00b38a"})`,
-                color: mode === "dark" ? "#09090b" : "#fff",
-                fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase",
-                textDecoration: "none", boxShadow: `0 0 30px ${t.accent}30`, transition: "all 0.3s",
-                wordBreak: "break-all",
-              }}>nishantchaudhary0512@gmail.com</a>
-              <a href="tel:+19309044657" style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: isMobile ? "11px" : "13px",
-                padding: isMobile ? "14px 20px" : "16px 36px",
-                borderRadius: "8px",
-                border: `1px solid ${t.borderHover}`, background: t.surface,
-                color: t.textSecondary, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
-              }}>+1 (930) 904-4657</a>
-              <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: isMobile ? "11px" : "13px",
-                padding: isMobile ? "14px 20px" : "16px 36px",
-                borderRadius: "8px",
-                border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
-                color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
-              }}>LinkedIn ↗</a>
-              <a
-                href={resumePdf}
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-                style={{
+            {isMobile ? (
+              <div style={{
+                display: "flex", gap: "12px",
+                justifyContent: "center", flexWrap: "wrap",
+              }}>
+                <a href="mailto:nishantchaudhary0512@gmail.com" style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: isMobile ? "11px" : "13px",
-                  padding: isMobile ? "14px 20px" : "16px 36px",
+                  fontSize: "11px",
+                  padding: "14px 20px",
+                  borderRadius: "8px",
+                  background: `linear-gradient(135deg, ${t.accent}, ${mode === "dark" ? "#00d4a0" : "#00b38a"})`,
+                  color: mode === "dark" ? "#09090b" : "#fff",
+                  fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase",
+                  textDecoration: "none", boxShadow: `0 0 30px ${t.accent}30`, transition: "all 0.3s",
+                  wordBreak: "break-all",
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                }}><FaEnvelope style={{ fontSize: "14px", flexShrink: 0 }} /> nishantchaudhary0512@gmail.com</a>
+                <a href="tel:+19309044657" style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "11px",
+                  padding: "14px 20px",
+                  borderRadius: "8px",
+                  border: `1px solid ${t.borderHover}`, background: t.surface,
+                  color: t.textSecondary, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                }}><FaPhoneAlt style={{ fontSize: "13px" }} /> +1 (930) 904-4657</a>
+                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "11px",
+                  padding: "14px 20px",
                   borderRadius: "8px",
                   border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
                   color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
-                }}
-              >
-                Resume ↗
-              </a>
-            </div>
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                }}><FaLinkedinIn style={{ fontSize: "14px" }} /> LinkedIn ↗</a>
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "11px",
+                  padding: "14px 20px",
+                  borderRadius: "8px",
+                  border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                  color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                }}><FaGithub style={{ fontSize: "14px" }} /> GitHub ↗</a>
+                <a
+                  href={resumePdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "11px",
+                    padding: "14px 20px",
+                    borderRadius: "8px",
+                    border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                    color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                  }}
+                >
+                  <FaFileAlt style={{ fontSize: "14px" }} /> Resume ↗
+                </a>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+                <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+                  <a href="mailto:nishantchaudhary0512@gmail.com" style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "13px",
+                    padding: "16px 36px",
+                    borderRadius: "8px",
+                    background: `linear-gradient(135deg, ${t.accent}, ${mode === "dark" ? "#00d4a0" : "#00b38a"})`,
+                    color: mode === "dark" ? "#09090b" : "#fff",
+                    fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase",
+                    textDecoration: "none", boxShadow: `0 0 30px ${t.accent}30`, transition: "all 0.3s",
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                  }}><FaEnvelope style={{ fontSize: "14px", flexShrink: 0 }} /> nishantchaudhary0512@gmail.com</a>
+                  <a href="tel:+19309044657" style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "13px",
+                    padding: "16px 36px",
+                    borderRadius: "8px",
+                    border: `1px solid ${t.borderHover}`, background: t.surface,
+                    color: t.textSecondary, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                  }}><FaPhoneAlt style={{ fontSize: "13px" }} /> +1 (930) 904-4657</a>
+                </div>
+                <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
+                  <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "13px",
+                    padding: "16px 36px",
+                    borderRadius: "8px",
+                    border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                    color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                  }}><FaLinkedinIn style={{ fontSize: "14px" }} /> LinkedIn ↗</a>
+                  <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "13px",
+                    padding: "16px 36px",
+                    borderRadius: "8px",
+                    border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                    color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                  }}><FaGithub style={{ fontSize: "14px" }} /> GitHub ↗</a>
+                  <a
+                    href={resumePdf}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: "13px",
+                      padding: "16px 36px",
+                      borderRadius: "8px",
+                      border: `1px solid ${t.accent2}40`, background: `${t.accent2}08`,
+                      color: t.accent2, letterSpacing: "1px", textDecoration: "none", transition: "all 0.3s",
+                      display: "inline-flex", alignItems: "center", gap: "8px",
+                    }}
+                  >
+                    <FaFileAlt style={{ fontSize: "14px" }} /> Resume ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </FadeInSection>
 
           <div style={{
