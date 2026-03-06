@@ -1004,10 +1004,12 @@ export default function Portfolio() {
           @keyframes rocketPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
           @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
           ::selection { background: ${t.selection}; color: ${t.text}; }
-          * { scrollbar-width: thin; scrollbar-color: ${t.accent}30 transparent; box-sizing: border-box; }
-          *::-webkit-scrollbar { width: 6px; }
-          *::-webkit-scrollbar-track { background: transparent; }
-          *::-webkit-scrollbar-thumb { background: ${t.accent}30; border-radius: 3px; }
+          * { scrollbar-width: thin; scrollbar-color: ${t.accent}50 ${t.bg}; box-sizing: border-box; }
+          *::-webkit-scrollbar { width: 8px; }
+          *::-webkit-scrollbar-track { background: ${mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"}; border-radius: 4px; }
+          *::-webkit-scrollbar-thumb { background: linear-gradient(180deg, ${t.accent}60, ${t.accent2}60); border-radius: 4px; border: 1px solid ${t.accent}15; transition: background 0.3s; }
+          *::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, ${t.accent}90, ${t.accent2}90); box-shadow: 0 0 8px ${t.accent}40; }
+          *::-webkit-scrollbar-thumb:active { background: linear-gradient(180deg, ${t.accent}, ${t.accent2}); }
           html { scroll-behavior: smooth; }
         `}</style>
         <InteractiveBackground />
