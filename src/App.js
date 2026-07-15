@@ -1938,7 +1938,7 @@ export default function Portfolio() {
                 href={resumePdf}
                 target="_blank"
                 rel="noopener noreferrer"
-                download
+                
                 style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: isMobile ? "12px" : "13px",
@@ -2675,7 +2675,7 @@ export default function Portfolio() {
                   href={resumePdf}
                   target="_blank"
                   rel="noopener noreferrer"
-                  download
+                  
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: "11px",
@@ -2736,7 +2736,7 @@ export default function Portfolio() {
                     href={resumePdf}
                     target="_blank"
                     rel="noopener noreferrer"
-                    download
+                    
                     style={{
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: "13px",
