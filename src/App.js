@@ -1627,7 +1627,7 @@ export default function Portfolio() {
   ];
 
   const LINKEDIN_URL = "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/";
-  const GITHUB_URL = "https://github.com/Nishant2306?tab=repositories";
+  const GITHUB_URL = "https://github.com/Nishant2306";
 
   const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
 
