@@ -592,6 +592,238 @@ function AnatomicalSkull() {
 }
 
 
+function AIRobotHead() {
+  const group = useRef();
+  const eyeL = useRef();
+  const eyeR = useRef();
+  const mouthGroup = useRef();
+  const antennaTip = useRef();
+  const dataRingRef = useRef();
+  const neuronsRef = useRef();
+  const haloRef = useRef();
+  const mouseSmooth = useRef({ x: 0, y: 0 });
+
+  const headEdges = useMemo(() => {
+    // rounded-box head outline: vertical profile rings + horizontal slices as point cloud
+    const points = [];
+    const colors = [];
+    const cyan = [0.0, 1.0, 0.78];
+    const purple = [0.47, 0.31, 1.0];
+
+    // head shell: superellipse cross-sections stacked vertically
+    for (let s = 0; s < 26; s++) {
+      const t = s / 25;
+      const y = 0.62 - t * 1.15;
+      // squarish rounded profile, tapering slightly at jaw
+      const taper = t > 0.72 ? 1 - (t - 0.72) * 0.9 : 1;
+      const rx = 0.55 * taper;
+      const rz = 0.5 * taper;
+      const n = 26;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        // superellipse exponent for squarish shape
+        const cx = Math.cos(a), sz = Math.sin(a);
+        const px = Math.sign(cx) * Math.pow(Math.abs(cx), 0.6) * rx;
+        const pz = Math.sign(sz) * Math.pow(Math.abs(sz), 0.6) * rz;
+        points.push(px, y, pz);
+        const c = t < 0.5 ? cyan : purple;
+        const b = 0.55 + (1 - t) * 0.45;
+        colors.push(c[0] * b, c[1] * b, c[2] * b);
+      }
+    }
+
+    // face plate rim (front rectangle outline)
+    const rim = [];
+    const w = 0.42, h = 0.38, zf = 0.51, cy = 0.05;
+    for (let i = 0; i < 60; i++) {
+      const t = i / 60;
+      let x, y;
+      if (t < 0.25) { x = -w + (t / 0.25) * 2 * w; y = h; }
+      else if (t < 0.5) { x = w; y = h - ((t - 0.25) / 0.25) * 2 * h; }
+      else if (t < 0.75) { x = w - ((t - 0.5) / 0.25) * 2 * w; y = -h; }
+      else { x = -w; y = -h + ((t - 0.75) / 0.25) * 2 * h; }
+      rim.push(x, y + cy, zf);
+    }
+    for (let i = 0; i < rim.length; i += 3) {
+      points.push(rim[i], rim[i + 1], rim[i + 2]);
+      colors.push(0, 0.9, 0.75);
+    }
+
+    // side ear discs
+    for (let side = -1; side <= 1; side += 2) {
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2;
+        points.push(side * 0.57, 0.05 + Math.cos(a) * 0.14, Math.sin(a) * 0.14);
+        colors.push(0.47, 0.31, 1.0);
+      }
+    }
+
+    const posArr = new Float32Array(points);
+    const colArr = new Float32Array(colors);
+    return { posArr, colArr, count: points.length / 3 };
+  }, []);
+
+  const neurons = useMemo(() => {
+    const n = 60;
+    const pos = new Float32Array(n * 3);
+    const col = new Float32Array(n * 3);
+    const meta = [];
+    for (let i = 0; i < n; i++) {
+      const isCyan = i % 3 !== 0;
+      col[i * 3] = isCyan ? 0 : 0.47;
+      col[i * 3 + 1] = isCyan ? 1 : 0.31;
+      col[i * 3 + 2] = isCyan ? 0.78 : 1;
+      meta.push({
+        orbitR: 0.75 + Math.random() * 0.45,
+        orbitSpeed: 0.3 + Math.random() * 0.7,
+        ySpeed: 0.3 + Math.random() * 0.5,
+        offset: Math.random() * Math.PI * 2,
+        yOffset: Math.random() * Math.PI * 2,
+      });
+    }
+    return { pos, col, meta, n };
+  }, []);
+
+  const mouthBars = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => ({
+      x: -0.18 + i * 0.06,
+      speed: 2 + Math.random() * 3,
+      offset: Math.random() * Math.PI * 2,
+    })),
+  []);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    const mx = state.pointer.x, my = state.pointer.y;
+    mouseSmooth.current.x += (mx - mouseSmooth.current.x) * 0.05;
+    mouseSmooth.current.y += (my - mouseSmooth.current.y) * 0.05;
+    const sx = mouseSmooth.current.x, sy = mouseSmooth.current.y;
+
+    group.current.rotation.y = sx * 0.5 + Math.sin(t * 0.3) * 0.18;
+    group.current.rotation.x = -sy * 0.25 + Math.sin(t * 0.5) * 0.03;
+    group.current.position.y = Math.sin(t * 0.6) * 0.05;
+
+    // blinking, pulsing eyes
+    const blink = Math.sin(t * 0.7) > 0.98 ? 0.15 : 1;
+    const pulse = 1.4 + Math.sin(t * 2.2) * 0.5;
+    if (eyeL.current) {
+      eyeL.current.material.emissiveIntensity = pulse * blink;
+      eyeL.current.scale.y = blink;
+    }
+    if (eyeR.current) {
+      eyeR.current.material.emissiveIntensity = pulse * blink;
+      eyeR.current.scale.y = blink;
+    }
+
+    // equalizer mouth (AI "speaking")
+    if (mouthGroup.current)
+      mouthGroup.current.children.forEach((bar, i) => {
+        const m = mouthBars[i];
+        bar.scale.y = 0.3 + Math.abs(Math.sin(t * m.speed + m.offset)) * 1.4;
+      });
+
+    if (antennaTip.current)
+      antennaTip.current.material.emissiveIntensity = 1.2 + Math.sin(t * 3) * 0.8;
+
+    if (dataRingRef.current) {
+      dataRingRef.current.rotation.z = t * 0.25;
+      dataRingRef.current.rotation.x = 1.35 + sy * 0.1 + Math.sin(t * 0.2) * 0.08;
+    }
+    if (haloRef.current) {
+      haloRef.current.rotation.z = -t * 0.15;
+      haloRef.current.material.opacity = 0.12 + Math.sin(t * 1.5) * 0.05;
+    }
+
+    if (neuronsRef.current) {
+      const p = neuronsRef.current.geometry.attributes.position.array;
+      for (let i = 0; i < neurons.n; i++) {
+        const m = neurons.meta[i];
+        const angle = t * m.orbitSpeed + m.offset;
+        const r = m.orbitR + Math.sin(t * 0.5 + m.offset) * 0.1;
+        p[i * 3] = Math.cos(angle) * r;
+        p[i * 3 + 1] = Math.sin(t * m.ySpeed + m.yOffset) * 0.55;
+        p[i * 3 + 2] = Math.sin(angle) * r;
+      }
+      neuronsRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+  });
+
+  return (
+    <group ref={group}>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" array={headEdges.posArr} count={headEdges.count} itemSize={3} />
+          <bufferAttribute attach="attributes-color" array={headEdges.colArr} count={headEdges.count} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.016} vertexColors transparent opacity={0.85} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} />
+      </points>
+
+      {/* face plate */}
+      <mesh position={[0, 0.05, 0.5]}>
+        <planeGeometry args={[0.8, 0.72]} />
+        <meshStandardMaterial color="#05050f" emissive="#7850ff" emissiveIntensity={0.06} transparent opacity={0.55} depthWrite={false} />
+      </mesh>
+
+      {/* eyes */}
+      <mesh ref={eyeL} position={[-0.18, 0.16, 0.53]}>
+        <capsuleGeometry args={[0.045, 0.06, 4, 12]} />
+        <meshStandardMaterial color="#001510" emissive="#00ffc8" emissiveIntensity={1.5} />
+      </mesh>
+      <mesh ref={eyeR} position={[0.18, 0.16, 0.53]}>
+        <capsuleGeometry args={[0.045, 0.06, 4, 12]} />
+        <meshStandardMaterial color="#001510" emissive="#00ffc8" emissiveIntensity={1.5} />
+      </mesh>
+
+      {/* equalizer mouth */}
+      <group ref={mouthGroup} position={[0, -0.14, 0.53]}>
+        {mouthBars.map((b, i) => (
+          <mesh key={i} position={[b.x, 0, 0]}>
+            <boxGeometry args={[0.028, 0.09, 0.01]} />
+            <meshStandardMaterial emissive={i % 2 === 0 ? "#00ffc8" : "#00d4ff"} emissiveIntensity={1.2} transparent opacity={0.85} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* antenna */}
+      <mesh position={[0, 0.78, 0]}>
+        <cylinderGeometry args={[0.008, 0.012, 0.3, 8]} />
+        <meshStandardMaterial color="#101020" metalness={0.9} roughness={0.2} emissive="#7850ff" emissiveIntensity={0.3} />
+      </mesh>
+      <mesh ref={antennaTip} position={[0, 0.96, 0]}>
+        <sphereGeometry args={[0.045, 16, 16]} />
+        <meshStandardMaterial emissive="#7850ff" emissiveIntensity={1.5} transparent opacity={0.9} />
+      </mesh>
+
+      {/* ear cores */}
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[side * 0.57, 0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.09, 0.09, 0.05, 16]} />
+          <meshStandardMaterial color="#0a0a1a" metalness={0.9} roughness={0.2} emissive="#00d4ff" emissiveIntensity={0.4} />
+        </mesh>
+      ))}
+
+      {/* orbiting data ring + halo */}
+      <group ref={dataRingRef} position={[0, 0, 0]}>
+        <mesh><torusGeometry args={[0.95, 0.004, 16, 100]} /><meshStandardMaterial emissive="#00ffc8" emissiveIntensity={1} transparent opacity={0.25} /></mesh>
+      </group>
+      <mesh ref={haloRef} position={[0, 0.85, 0]} rotation={[Math.PI / 2.2, 0, 0]}>
+        <torusGeometry args={[0.35, 0.005, 8, 64]} />
+        <meshStandardMaterial emissive="#00d4ff" emissiveIntensity={0.8} transparent opacity={0.15} />
+      </mesh>
+      <mesh rotation={[0.4, 0.3, 0.1]}><torusGeometry args={[1.15, 0.002, 8, 64]} /><meshStandardMaterial emissive="#7850ff" emissiveIntensity={0.7} transparent opacity={0.08} /></mesh>
+
+      {/* orbiting data particles */}
+      <points ref={neuronsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" array={neurons.pos} count={neurons.n} itemSize={3} />
+          <bufferAttribute attach="attributes-color" array={neurons.col} count={neurons.n} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.035} vertexColors transparent opacity={0.7} blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation />
+      </points>
+    </group>
+  );
+}
+
 const canvasStyle = {
   width: "100%",
   height: "100%",
@@ -619,6 +851,18 @@ export const InternVisual3D = () => (
       <pointLight position={[-2, 2, 3]} intensity={0.6} color="#00ffc8" />
       <pointLight position={[2, -1, 2]} intensity={0.4} color="#7850ff" />
       <CrystallineTesseract />
+    </Canvas>
+  </div>
+);
+
+export const RobotVisual = () => (
+  <div style={canvasStyle}>
+    <Canvas camera={{ position: [0, 0.15, 2.8], fov: 42 }} gl={{ alpha: true, antialias: true }} style={{ background: "transparent" }}>
+      <ambientLight intensity={0.15} />
+      <pointLight position={[-2, 2, 3]} intensity={0.6} color="#00ffc8" />
+      <pointLight position={[2, -1, 2]} intensity={0.4} color="#7850ff" />
+      <pointLight position={[0, 0, 3]} intensity={0.25} color="#00d4ff" />
+      <AIRobotHead />
     </Canvas>
   </div>
 );

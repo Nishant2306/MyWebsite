@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from "react";
-import { FaJava, FaAmazon, FaMicrosoft, FaGithub, FaLinkedinIn, FaFileAlt, FaEnvelope, FaPhoneAlt, FaPaperPlane } from "react-icons/fa";
-import { LaptopVisual, InternVisual3D, FaceVisual } from "./components/ExperienceVisuals";
+import { FaJava, FaAmazon, FaMicrosoft, FaGithub, FaLinkedinIn, FaFileAlt, FaEnvelope, FaPhoneAlt, FaPaperPlane, FaPause, FaPlay, FaTerminal } from "react-icons/fa";
+import { LaptopVisual, InternVisual3D, FaceVisual, RobotVisual } from "./components/ExperienceVisuals";
 import {
   SiPython,
   SiJavascript,
@@ -27,7 +27,14 @@ import {
   SiJenkins,
   SiGitlab,
   SiFigma,
-  SiBlender
+  SiBlender,
+  SiFastapi,
+  SiPostgresql,
+  SiRedis,
+  SiStreamlit,
+  SiScikitlearn,
+  SiPrometheus,
+  SiDatabricks
 } from "react-icons/si";
 import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
 import { RocketIcon, ClockIcon, BrainIcon, BoxIcon, StarBadgeIcon, ChartIcon, GradCapIcon, HandSignIcon } from "./components/ThemedIcons";
@@ -99,14 +106,15 @@ const useResponsive = () => {
 const InteractiveBackground = () => {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
-  const mouseRef = useRef({ x: -1000, y: -1000, px: -1000, py: -1000, speed: 0 });
+  const mouseRef = useRef({ clientX: -1000, clientY: -1000, px: -1000, py: -1000, speed: 0 });
   const trailRef = useRef([]);
-  const { mode } = useTheme();
+  const { mode, motionOK } = useTheme();
   const t = themes[mode];
   const { isMobile } = useResponsive();
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas || !motionOK) return;
     const ctx = canvas.getContext("2d");
     let particles = [];
     let ripples = [];
@@ -176,9 +184,20 @@ const InteractiveBackground = () => {
       frame++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
-      const mSpeed = mouseRef.current.speed;
+      // Convert viewport coords to document coords every frame so the trail
+      // stays glued to the cursor even while scrolling (scroll changes the
+      // document position under a stationary cursor).
+      const m = mouseRef.current;
+      const hasMouse = m.clientX > -999;
+      const mx = hasMouse ? m.clientX : -1000;
+      const my = hasMouse ? m.clientY + window.scrollY : -1000;
+      if (hasMouse) {
+        const frameDist = m.px > -999 ? Math.sqrt((mx - m.px) ** 2 + (my - m.py) ** 2) : 0;
+        m.speed = m.speed * 0.7 + frameDist * 0.3;
+        m.px = mx;
+        m.py = my;
+      }
+      const mSpeed = m.speed;
 
       if (mx > 0 && my > 0) {
         trailRef.current.push({ x: mx, y: my, life: 1 });
@@ -419,29 +438,14 @@ const InteractiveBackground = () => {
     };
 
     const handleMouse = (e) => {
-      const prev = mouseRef.current;
-      const speed = Math.sqrt((e.clientX - prev.x) ** 2 + ((e.clientY + window.scrollY) - prev.y) ** 2);
-      mouseRef.current = {
-        x: e.clientX,
-        y: e.clientY + window.scrollY,
-        px: prev.x,
-        py: prev.y,
-        speed: speed,
-      };
+      mouseRef.current.clientX = e.clientX;
+      mouseRef.current.clientY = e.clientY;
     };
 
     const handleTouch = (e) => {
       if (e.touches.length > 0) {
-        const touch = e.touches[0];
-        const prev = mouseRef.current;
-        const speed = Math.sqrt((touch.clientX - prev.x) ** 2 + ((touch.clientY + window.scrollY) - prev.y) ** 2);
-        mouseRef.current = {
-          x: touch.clientX,
-          y: touch.clientY + window.scrollY,
-          px: prev.x,
-          py: prev.y,
-          speed: speed,
-        };
+        mouseRef.current.clientX = e.touches[0].clientX;
+        mouseRef.current.clientY = e.touches[0].clientY;
       }
     };
 
@@ -459,7 +463,9 @@ const InteractiveBackground = () => {
       window.removeEventListener("touchmove", handleTouch);
       clearInterval(resizeInterval);
     };
-  }, [mode, isMobile]);
+  }, [mode, isMobile, motionOK]);
+
+  if (!motionOK) return null;
 
   return (
     <canvas
@@ -479,6 +485,7 @@ const InteractiveBackground = () => {
 const FadeInSection = ({ children, delay = 0 }) => {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const { motionOK } = useTheme();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -489,13 +496,14 @@ const FadeInSection = ({ children, delay = 0 }) => {
     return () => observer.disconnect();
   }, []);
 
+  const shown = visible || !motionOK;
   return (
     <div
       ref={ref}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(50px)",
-        transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`,
+        opacity: shown ? 1 : 0,
+        transform: shown ? "translateY(0)" : "translateY(50px)",
+        transition: motionOK ? `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s` : "none",
       }}
     >
       {children}
@@ -505,14 +513,16 @@ const FadeInSection = ({ children, delay = 0 }) => {
 
 const GlitchText = ({ text }) => {
   const [glitch, setGlitch] = useState(false);
+  const { motionOK } = useTheme();
 
   useEffect(() => {
+    if (!motionOK) return;
     const interval = setInterval(() => {
       setGlitch(true);
       setTimeout(() => setGlitch(false), 200);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [motionOK]);
 
   return (
     <span style={{ position: "relative", display: "inline-block" }}>
@@ -539,8 +549,10 @@ const TypeWriter = ({ texts, speed = 80 }) => {
   const [textIndex, setTextIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const { motionOK } = useTheme();
 
   useEffect(() => {
+    if (!motionOK) return;
     const current = texts[textIndex];
     const timeout = setTimeout(() => {
       if (!deleting) {
@@ -559,7 +571,16 @@ const TypeWriter = ({ texts, speed = 80 }) => {
       }
     }, deleting ? speed / 2 : speed);
     return () => clearTimeout(timeout);
-  }, [charIndex, deleting, textIndex, texts, speed]);
+  }, [charIndex, deleting, textIndex, texts, speed, motionOK]);
+
+  if (!motionOK) {
+    return (
+      <span>
+        {texts[0]}
+        <span style={{ borderRight: "2px solid #00ffc8", marginLeft: "2px" }}>&nbsp;</span>
+      </span>
+    );
+  }
 
   return (
     <span>
@@ -593,7 +614,15 @@ const SkillOrb = ({ name, color, isMobile }) => {
     if (key.includes("angular")) return SiAngular;
     if (key === "sql") return SiMysql;
     if (key.includes("scala")) return SiScala;
+    if (key.includes("fastapi")) return SiFastapi;
     if (key.includes("flask")) return SiFlask;
+    if (key.includes("databricks")) return SiDatabricks;
+    if (key.includes("postgres")) return SiPostgresql;
+    if (key.includes("redis")) return SiRedis;
+    if (key.includes("streamlit")) return SiStreamlit;
+    if (key.includes("scikit")) return SiScikitlearn;
+    if (key.includes("prometheus")) return SiPrometheus;
+    if (key.includes("llm") || key.includes("rag")) return FaBrain;
     if (key.includes("html")) return SiHtml5;
     if (key.includes("css")) return SiCss;
     if (key.includes("aws")) return FaAmazon;
@@ -660,6 +689,85 @@ const SkillOrb = ({ name, color, isMobile }) => {
         whiteSpace: isMobile && isAwsSkill ? "normal" : "nowrap",
         overflowWrap: isMobile && isAwsSkill ? "anywhere" : "normal",
       }}>{name}</span>
+    </div>
+  );
+};
+
+const StatCard = ({ value, suffix, label, isMobile }) => {
+  const { mode, motionOK } = useTheme();
+  const t = themes[mode];
+  const ref = useRef(null);
+  const [display, setDisplay] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!motionOK || typeof IntersectionObserver === "undefined") {
+      setDisplay(value);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const startTime = performance.now();
+          const duration = 1600;
+          const tick = (now) => {
+            const p = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            setDisplay(Math.round(value * eased));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          // rAF pauses in hidden tabs, so pin the final value as a fallback
+          setTimeout(() => setDisplay(value), duration + 200);
+        }
+      },
+      { threshold: 0.4 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value, motionOK]);
+
+  return (
+    <div
+      ref={ref}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: "relative",
+        padding: isMobile ? "18px 16px" : "24px 20px",
+        borderRadius: "14px",
+        border: `1px solid ${hovered ? `${t.accent}50` : t.border}`,
+        background: hovered ? t.surfaceHover : t.cardBg,
+        overflow: "hidden",
+        cursor: "default",
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: hovered ? `0 16px 40px rgba(0,0,0,0.25), 0 0 20px ${t.accent}15` : "none",
+      }}
+    >
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: "2px",
+        background: `linear-gradient(90deg, ${t.accent}, ${t.accent2})`,
+        transform: hovered ? "scaleX(1)" : "scaleX(0.35)",
+        transformOrigin: "left",
+        transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+        opacity: hovered ? 1 : 0.6,
+      }} />
+      <div style={{
+        fontFamily: "'Syne', sans-serif",
+        fontSize: isMobile ? "26px" : "34px", fontWeight: 800,
+        background: `linear-gradient(135deg, ${t.accent}, ${t.accent2})`,
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        lineHeight: 1.1,
+      }}>{display}{suffix}</div>
+      <div style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: isMobile ? "9px" : "10px", color: hovered ? t.textSecondary : t.textMuted,
+        letterSpacing: "1.5px", textTransform: "uppercase", marginTop: "8px",
+        transition: "color 0.3s", lineHeight: 1.5,
+      }}>{label}</div>
     </div>
   );
 };
@@ -767,35 +875,45 @@ const TimelineCard = ({ role, company, period, location, bullets, tech }) => {
   );
 };
 
-const ProjectCard = ({ title, tech, bullets, icon }) => {
+const ProjectCard = ({ title, tech, bullets, icon, date, link }) => {
   const [hovered, setHovered] = useState(false);
-  const { mode } = useTheme();
+  const { mode, motionOK } = useTheme();
   const t = themes[mode];
   const { isMobile } = useResponsive();
 
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: isMobile ? "24px 20px" : "32px",
-        borderRadius: "16px",
-        border: `1px solid ${hovered ? `${t.accent}40` : t.border}`,
-        background: hovered ? t.surfaceHover : t.cardBg,
-        transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-        transform: hovered ? "translateY(-6px)" : "translateY(0)",
-        boxShadow: hovered ? "0 24px 60px rgba(0,0,0,0.2)" : "none",
-        cursor: "default",
-        position: "relative",
-        overflow: "hidden",
-        minHeight: isMobile ? "260px" : "320px",
-      }}
-    >
+  const cardStyle = {
+    display: "flex",
+    flexDirection: "column",
+    padding: isMobile ? "24px 20px" : "32px",
+    borderRadius: "16px",
+    border: `1px solid ${hovered ? `${t.accent}40` : t.border}`,
+    background: hovered ? t.surfaceHover : t.cardBg,
+    transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+    transform: hovered && motionOK ? "translateY(-6px)" : "translateY(0)",
+    boxShadow: hovered ? "0 24px 60px rgba(0,0,0,0.2)" : "none",
+    cursor: link ? "pointer" : "default",
+    position: "relative",
+    overflow: "hidden",
+    minHeight: isMobile ? "260px" : "320px",
+    height: "100%",
+    textDecoration: "none",
+    color: "inherit",
+  };
+
+  const inner = (
+    <>
       <div style={{
         position: "absolute", top: "-10px", right: "-10px",
         opacity: hovered ? 0.2 : 0.08,
         transition: "opacity 0.5s", filter: "blur(1px)",
       }}>{icon && icon({ size: isMobile ? 80 : 110 })}</div>
+      {date && (
+        <div style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "11px", color: t.accent,
+          letterSpacing: "2px", textTransform: "uppercase", marginBottom: "8px",
+        }}>{date}</div>
+      )}
       <div style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: "11px", color: t.accent2, letterSpacing: "1px", marginBottom: "12px",
@@ -805,13 +923,57 @@ const ProjectCard = ({ title, tech, bullets, icon }) => {
         fontSize: isMobile ? "18px" : "22px", fontWeight: 700, color: t.text,
         margin: "0 0 16px 0",
       }}>{title}</h3>
-      {bullets.map((b, i) => (
-        <p key={i} style={{
-          fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: isMobile ? "13px" : "14px", color: t.textSecondary,
-          lineHeight: "1.7", margin: "0 0 8px 0",
-        }}>{b}</p>
-      ))}
+      <div style={{ flexGrow: 1 }}>
+        {bullets.map((b, i) => (
+          <p key={i} style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: isMobile ? "13px" : "14px", color: t.textSecondary,
+            lineHeight: "1.7", margin: "0 0 8px 0",
+          }}>{b}</p>
+        ))}
+      </div>
+      {link && (
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "8px",
+          marginTop: "16px",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase",
+          color: hovered ? t.accent : t.textMuted,
+          transition: "color 0.3s",
+        }}>
+          <span style={{
+            width: "6px", height: "6px", borderRadius: "50%",
+            background: t.accent,
+            boxShadow: `0 0 ${hovered ? 10 : 5}px ${t.accent}`,
+            animation: motionOK ? "pulse 2s ease-in-out infinite" : "none",
+            flexShrink: 0,
+          }} />
+          <FaGithub style={{ fontSize: "14px" }} />
+          <span>// click for repo</span>
+          <span style={{
+            display: "inline-block",
+            transform: hovered ? "translateX(6px)" : "translateX(0)",
+            transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}>→</span>
+        </div>
+      )}
+    </>
+  );
+
+  const events = {
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => setHovered(false),
+    onFocus: () => setHovered(true),
+    onBlur: () => setHovered(false),
+  };
+
+  return link ? (
+    <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`${title} repository on GitHub`} style={cardStyle} {...events}>
+      {inner}
+    </a>
+  ) : (
+    <div style={cardStyle} {...events}>
+      {inner}
     </div>
   );
 };
@@ -822,13 +984,17 @@ const NavDot = ({ label, active, onClick }) => {
   const t = themes[mode];
 
   return (
-    <div
+    <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      aria-label={`Go to ${label} section`}
       style={{
         display: "flex", alignItems: "center", gap: "12px",
         cursor: "pointer", padding: "6px 0",
+        background: "none", border: "none",
       }}
     >
       <div style={{
@@ -848,7 +1014,7 @@ const NavDot = ({ label, active, onClick }) => {
         transform: hovered || active ? "translateX(0)" : "translateX(-10px)",
         transition: "all 0.3s", whiteSpace: "nowrap",
       }}>{label}</span>
-    </div>
+    </button>
   );
 };
 
@@ -891,16 +1057,484 @@ const MobileMenuButton = ({ open, onClick }) => {
   );
 };
 
+const Kbd = ({ children }) => {
+  const { mode } = useTheme();
+  const t = themes[mode];
+  return (
+    <span style={{
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: "10px", color: t.textSecondary,
+      padding: "2px 6px", borderRadius: "4px",
+      border: `1px solid ${t.border}`,
+      background: t.surface,
+    }}>{children}</span>
+  );
+};
+
+const CommandPalette = ({ open, onClose, actions }) => {
+  const { mode, motionOK } = useTheme();
+  const t = themes[mode];
+  const { isMobile } = useResponsive();
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(0);
+  const inputRef = useRef(null);
+  const listRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return actions;
+    return actions.filter(a => (a.label + " " + (a.hint || "")).toLowerCase().includes(q));
+  }, [query, actions]);
+
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      setSelected(0);
+      setTimeout(() => inputRef.current && inputRef.current.focus(), 30);
+    }
+  }, [open]);
+
+  useEffect(() => { setSelected(0); }, [query]);
+
+  useEffect(() => {
+    if (!listRef.current) return;
+    const el = listRef.current.children[selected];
+    if (el) el.scrollIntoView({ block: "nearest" });
+  }, [selected]);
+
+  if (!open) return null;
+
+  const run = (action) => {
+    onClose();
+    action.perform();
+  };
+
+  const handleKey = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelected(s => (s + 1) % Math.max(1, filtered.length));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelected(s => (s - 1 + Math.max(1, filtered.length)) % Math.max(1, filtered.length));
+    } else if (e.key === "Enter" && filtered[selected]) {
+      e.preventDefault();
+      run(filtered[selected]);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(6px)",
+        display: "flex", alignItems: "flex-start", justifyContent: "center",
+        padding: isMobile ? "80px 16px 16px" : "15vh 16px 16px",
+        animation: motionOK ? "slideIn 0.2s ease" : "none",
+      }}
+      role="dialog" aria-modal="true" aria-label="Command palette"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%", maxWidth: "560px",
+          background: t.bg,
+          border: `1px solid ${t.borderHover}`,
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow: `0 30px 90px rgba(0,0,0,0.5), 0 0 40px ${t.accent}10`,
+        }}
+      >
+        <div style={{
+          display: "flex", alignItems: "center", gap: "12px",
+          padding: "16px 20px",
+          borderBottom: `1px solid ${t.border}`,
+        }}>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            color: t.accent, fontSize: "14px",
+          }}>❯</span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Type a command or search..."
+            aria-label="Search commands"
+            style={{
+              flex: 1, background: "none", border: "none", outline: "none",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "14px", color: t.text,
+              caretColor: t.accent,
+            }}
+          />
+          <Kbd>esc</Kbd>
+        </div>
+        <div ref={listRef} style={{ maxHeight: "320px", overflowY: "auto", padding: "8px" }}>
+          {filtered.length === 0 && (
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "12px", color: t.textMuted,
+              padding: "20px", textAlign: "center",
+            }}>no results found</div>
+          )}
+          {filtered.map((a, i) => (
+            <div
+              key={a.id}
+              onClick={() => run(a)}
+              onMouseEnter={() => setSelected(i)}
+              style={{
+                display: "flex", alignItems: "center", gap: "12px",
+                padding: "12px 14px", borderRadius: "8px",
+                cursor: "pointer",
+                background: i === selected ? `${t.accent}12` : "transparent",
+                borderLeft: `2px solid ${i === selected ? t.accent : "transparent"}`,
+                transition: "background 0.15s",
+              }}
+            >
+              <span style={{
+                color: i === selected ? t.accent : t.textMuted,
+                fontSize: "13px", display: "flex", alignItems: "center", width: "16px",
+              }}>{a.icon}</span>
+              <span style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: "14px",
+                color: i === selected ? t.text : t.textSecondary,
+                flex: 1,
+              }}>{a.label}</span>
+              {a.hint && (
+                <span style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px", color: t.textMuted,
+                  letterSpacing: "1px", textTransform: "uppercase",
+                }}>{a.hint}</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{
+          display: "flex", gap: "16px", alignItems: "center",
+          padding: "10px 20px",
+          borderTop: `1px solid ${t.border}`,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "10px", color: t.textMuted,
+        }}>
+          <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> navigate</span>
+          <span><Kbd>↵</Kbd> select</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
+  const { mode } = useTheme();
+  const t = themes[mode];
+  const { isMobile } = useResponsive();
+  const [lines, setLines] = useState([
+    { type: "out", text: "nishcodes terminal v1.0 - type 'help' to get started." },
+  ]);
+  const [input, setInput] = useState("");
+  const [cmdHistory, setCmdHistory] = useState([]);
+  const [histIndex, setHistIndex] = useState(-1);
+  const inputRef = useRef(null);
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current && inputRef.current.focus(), 30);
+  }, [open]);
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [lines, open]);
+
+  if (!open) return null;
+
+  const print = (entries) => setLines(prev => [...prev, ...entries]);
+
+  const COMMANDS = {
+    help: () => [
+      "available commands:",
+      "  whoami        who is this guy",
+      "  about         a short intro",
+      "  projects      list projects with repo links",
+      "  experience    where I've worked",
+      "  skills        my tech stack",
+      "  education     where I studied",
+      "  resume        open my resume",
+      "  contact       how to reach me",
+      "  github        open my GitHub",
+      "  linkedin      open my LinkedIn",
+      "  motion        toggle animations",
+      "  goto <section>  jump to a section",
+      "  clear         clear the terminal",
+      "  exit          close the terminal",
+    ],
+    whoami: () => ["Nishant Chaudhary - AI Developer @ ORIX, MS CS @ Indiana University."],
+    about: () => [
+      "I build systems that make people more capable.",
+      "Currently: RAG pipelines over 85K+ documents at ORIX.",
+      "Previously: Software Analyst at Nomura, AR/VR at Tata Research.",
+    ],
+    projects: () => [
+      "Relay    - cost-optimizing LLM gateway     github.com/Nishant2306/relay",
+      "Argus    - LLM eval & observability        github.com/Nishant2306/argus",
+      "Cue      - intent-aware workspace agent    github.com/Siriapps/Cue",
+      "DIVDASH  - D&I analytics dashboard         github.com/Nishant2306/DiveDash",
+      "DISHA    - student-mentor platform         github.com/satty26/disha",
+      "AID      - assistive interface for deaf    (private)",
+    ],
+    experience: () => [
+      "2026–now   AI Developer Intern      ORIX (Remote)",
+      "2024–2025  Software Analyst         Nomura Holdings",
+      "2024       Software Dev Intern      Nomura Holdings",
+      "2023       AR/VR Developer          Tata Research (TRDDC)",
+    ],
+    skills: () => [
+      "languages   Java, Python, JavaScript/TypeScript, SQL, Dart, Scala",
+      "frameworks  Spring Boot, React, Node.js, FastAPI, Flutter",
+      "cloud       Azure (AI, Databricks), AWS (Bedrock, SageMaker), GCP",
+      "ai/ml       RAG, LLM evaluation, prompt engineering, vector search",
+      "infra       Docker, Kubernetes, PostgreSQL, Redis, Prometheus, Grafana",
+    ],
+    education: () => [
+      "2025–2027  MS Computer Science   Indiana University Bloomington",
+      "2020–2024  B.Tech CSE            IIIT Pune (GPA 8.04/10)",
+    ],
+    contact: () => [
+      "email      nishantchaudhary0512@gmail.com",
+      "phone      +1 (930) 904-4657",
+      "linkedin   linkedin.com/in/nishant-chaudhary-9a250521a",
+    ],
+    resume: () => {
+      window.open(resumePdf, "_blank", "noopener");
+      return ["opening resume..."];
+    },
+    github: () => {
+      window.open("https://github.com/Nishant2306", "_blank", "noopener");
+      return ["opening github..."];
+    },
+    linkedin: () => {
+      window.open("https://www.linkedin.com/in/nishant-chaudhary-9a250521a/", "_blank", "noopener");
+      return ["opening linkedin..."];
+    },
+    theme: () => {
+      toggleTheme();
+      return ["theme toggled."];
+    },
+    motion: () => {
+      toggleMotion();
+      return ["animations toggled."];
+    },
+    date: () => [new Date().toString()],
+  };
+
+  const runCommand = (raw) => {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    setCmdHistory(prev => [...prev, cmd]);
+    setHistIndex(-1);
+    const echo = { type: "in", text: cmd };
+    const lower = cmd.toLowerCase();
+
+    if (lower === "clear") {
+      setLines([]);
+      return;
+    }
+    if (lower === "exit" || lower === "quit") {
+      setLines(prev => [...prev, echo, { type: "out", text: "bye. 👋" }]);
+      setTimeout(onClose, 400);
+      return;
+    }
+    if (lower.startsWith("goto ")) {
+      const section = lower.slice(5).trim();
+      const valid = ["about", "experience", "achievement", "projects", "skills", "education", "contact", "hero"];
+      if (valid.includes(section)) {
+        scrollTo(section);
+        print([echo, { type: "out", text: `navigating to ${section}...` }]);
+      } else {
+        print([echo, { type: "out", text: `unknown section: ${section}. try: ${valid.join(", ")}` }]);
+      }
+      return;
+    }
+    if (lower === "sudo hire-me" || lower === "sudo hire me") {
+      print([echo, { type: "out", text: "permission granted. ✔  email nishantchaudhary0512@gmail.com to complete the process." }]);
+      return;
+    }
+    if (lower.startsWith("sudo")) {
+      print([echo, { type: "out", text: "nice try. this incident will be reported. (try 'sudo hire-me')" }]);
+      return;
+    }
+    const fn = COMMANDS[lower];
+    if (fn) {
+      const out = fn();
+      print([echo, ...out.map(text => ({ type: "out", text }))]);
+    } else {
+      print([echo, { type: "out", text: `command not found: ${cmd}. type 'help' for the list.` }]);
+    }
+  };
+
+  const handleKey = (e) => {
+    if (e.key === "Enter") {
+      runCommand(input);
+      setInput("");
+    } else if (e.key === "Escape") {
+      onClose();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (cmdHistory.length) {
+        const ni = histIndex === -1 ? cmdHistory.length - 1 : Math.max(0, histIndex - 1);
+        setHistIndex(ni);
+        setInput(cmdHistory[ni]);
+      }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (histIndex >= 0) {
+        const ni = histIndex + 1;
+        if (ni >= cmdHistory.length) { setHistIndex(-1); setInput(""); }
+        else { setHistIndex(ni); setInput(cmdHistory[ni]); }
+      }
+    }
+  };
+
+  return (
+    <div
+      onClick={() => inputRef.current && inputRef.current.focus()}
+      style={{
+        position: "fixed",
+        left: "50%", transform: "translateX(-50%)",
+        bottom: isMobile ? "12px" : "28px",
+        width: isMobile ? "calc(100vw - 24px)" : "min(720px, calc(100vw - 48px))",
+        height: isMobile ? "55vh" : "400px",
+        background: mode === "dark" ? "rgba(6,6,10,0.96)" : "rgba(20,20,30,0.97)",
+        border: `1px solid ${t.accent}30`,
+        borderRadius: "12px",
+        boxShadow: `0 30px 80px rgba(0,0,0,0.6), 0 0 40px ${t.accent}12`,
+        backdropFilter: "blur(16px)",
+        zIndex: 290,
+        display: "flex", flexDirection: "column",
+        overflow: "hidden",
+      }}
+      role="dialog" aria-label="Interactive terminal"
+    >
+      <div style={{
+        display: "flex", alignItems: "center", gap: "8px",
+        padding: "10px 14px",
+        borderBottom: `1px solid rgba(255,255,255,0.08)`,
+        background: "rgba(255,255,255,0.03)",
+      }}>
+        {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+          <span key={c} style={{ width: "10px", height: "10px", borderRadius: "50%", background: c }} />
+        ))}
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "11px", color: "rgba(255,255,255,0.5)",
+          marginLeft: "8px", flex: 1,
+        }}>nishant@portfolio: ~</span>
+        <button
+          onClick={onClose}
+          aria-label="Close terminal"
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: "rgba(255,255,255,0.5)", fontSize: "14px",
+            fontFamily: "'JetBrains Mono', monospace", padding: "2px 6px",
+          }}
+        >✕</button>
+      </div>
+      <div ref={bodyRef} style={{ flex: 1, overflowY: "auto", padding: "14px 16px" }}>
+        {lines.map((l, i) => (
+          <div key={i} style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "12px", lineHeight: 1.8,
+            whiteSpace: "pre-wrap", wordBreak: "break-word",
+            color: l.type === "in" ? "#00ffc8" : "rgba(255,255,255,0.7)",
+          }}>
+            {l.type === "in" ? `❯ ${l.text}` : l.text}
+          </div>
+        ))}
+      </div>
+      <div style={{
+        display: "flex", alignItems: "center", gap: "10px",
+        padding: "10px 16px",
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+      }}>
+        <span style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          color: "#00ffc8", fontSize: "13px",
+        }}>❯</span>
+        <input
+          ref={inputRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKey}
+          spellCheck={false}
+          autoComplete="off"
+          aria-label="Terminal command input"
+          style={{
+            flex: 1, background: "none", border: "none", outline: "none",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "13px", color: "#fff",
+            caretColor: "#00ffc8",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 export default function Portfolio() {
   const [mode, setMode] = useState("dark");
   const [activeSection, setActiveSection] = useState("hero");
   const [scrollY, setScrollY] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [motionOK, setMotionOK] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("motion");
+    if (saved === "on") return true;
+    if (saved === "off") return false;
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
   const { isMobile, isTablet, isDesktop, width } = useResponsive();
 
   const toggle = useCallback(() => setMode(m => m === "dark" ? "light" : "dark"), []);
+  const toggleMotion = useCallback(() => {
+    setMotionOK(m => {
+      localStorage.setItem("motion", m ? "off" : "on");
+      return !m;
+    });
+  }, []);
   const t = themes[mode];
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const tag = e.target.tagName;
+      const typing = tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setTerminalOpen(false);
+        setPaletteOpen(o => !o);
+        return;
+      }
+      if (typing) return;
+      if (e.key === "`") {
+        e.preventDefault();
+        setPaletteOpen(false);
+        setTerminalOpen(o => !o);
+      } else if (e.key === "Escape") {
+        setPaletteOpen(false);
+        setTerminalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const sections = ["hero", "about", "experience", "achievement", "projects", "skills", "education", "contact"];
 
@@ -925,7 +1559,7 @@ export default function Portfolio() {
   }, []);
 
   const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById(id)?.scrollIntoView({ behavior: motionOK ? "smooth" : "auto" });
     setMobileMenuOpen(false);
   };
 
@@ -935,6 +1569,7 @@ export default function Portfolio() {
       skills: [
         { name: "Java / Spring Boot", color: "#00ffc8" },
         { name: "Python", color: "#7850ff" },
+        { name: "FastAPI", color: "#009688" },
         { name: "JavaScript", color: "#FFD700" },
         { name: "React.js", color: "#00d4ff" },
         { name: "Node.js", color: "#00ffc8" },
@@ -954,6 +1589,9 @@ export default function Portfolio() {
         { name: "AWS (Bedrock, SageMaker, Lambda, EC2, S3)", color: "#FF9900" },
         { name: "Google Cloud Platform", color: "#4285f4" },
         { name: "Microsoft Azure", color: "#00bcf2" },
+        { name: "Azure Databricks", color: "#FF3621" },
+        { name: "PostgreSQL", color: "#4169E1" },
+        { name: "Redis Stack", color: "#DC382D" },
         { name: "Docker", color: "#00d4ff" },
         { name: "Kubernetes", color: "#326ce5" },
         { name: "TensorFlow", color: "#ff6f00" },
@@ -961,6 +1599,9 @@ export default function Portfolio() {
         { name: "Neo4j", color: "#00ffc8" },
         { name: "MongoDB", color: "#47A248" },
         { name: "Grafana", color: "#F46800" },
+        { name: "Prometheus", color: "#E6522C" },
+        { name: "Streamlit", color: "#FF4B4B" },
+        { name: "scikit-learn", color: "#F7931E" },
         { name: "CrewAI", color: "#7850ff" },
       ],
     },
@@ -968,9 +1609,14 @@ export default function Portfolio() {
       title: "TOOLS & PLATFORMS",
       skills: [
         { name: "Git", color: "#f05032" },
-        { name: "CI/CD (Jenkins, GitLab)", color: "#00ffc8" },
+        { name: "CI/CD (Jenkins, GitLab, GitHub Actions)", color: "#00ffc8" },
         { name: "Pact Broker", color: "#7850ff" },
         { name: "Machine Learning", color: "#FFD700" },
+        { name: "LLM Evaluation", color: "#FFD700" },
+        { name: "Prompt Engineering", color: "#00ffc8" },
+        { name: "RAG / Vector Search", color: "#7850ff" },
+        { name: "A/B Testing", color: "#00d4ff" },
+        { name: "Observability (OpenTelemetry)", color: "#f5a623" },
         { name: "Agile / Scrum", color: "#00d4ff" },
         { name: "AR / VR", color: "#7850ff" },
         { name: "Blender", color: "#e87d0d" },
@@ -985,8 +1631,25 @@ export default function Portfolio() {
 
   const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
 
+  const paletteActions = [
+    ...navItems.map(s => ({
+      id: `goto-${s.toLowerCase()}`,
+      label: `Go to ${s}`,
+      hint: "section",
+      icon: "#",
+      perform: () => scrollTo(s.toLowerCase()),
+    })),
+    { id: "github", label: "Open GitHub", hint: "link", icon: <FaGithub />, perform: () => window.open(GITHUB_URL, "_blank", "noopener") },
+    { id: "linkedin", label: "Open LinkedIn", hint: "link", icon: <FaLinkedinIn />, perform: () => window.open(LINKEDIN_URL, "_blank", "noopener") },
+    { id: "resume", label: "Open Resume", hint: "pdf", icon: <FaFileAlt />, perform: () => window.open(resumePdf, "_blank", "noopener") },
+    { id: "email", label: "Send an Email", hint: "contact", icon: <FaEnvelope />, perform: () => { window.location.href = "mailto:nishantchaudhary0512@gmail.com"; } },
+    { id: "terminal", label: "Open Terminal", hint: "` key", icon: <FaTerminal />, perform: () => setTerminalOpen(true) },
+    { id: "motion", label: motionOK ? "Pause Animations" : "Play Animations", hint: "accessibility", icon: motionOK ? <FaPause /> : <FaPlay />, perform: toggleMotion },
+    // { id: "theme", label: mode === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme", hint: "theme", icon: "◐", perform: toggle },
+  ];
+
   return (
-    <ThemeContext.Provider value={{ mode, toggle }}>
+    <ThemeContext.Provider value={{ mode, toggle, motionOK, toggleMotion }}>
       <div style={{
         background: t.bg,
         color: t.text,
@@ -1010,7 +1673,12 @@ export default function Portfolio() {
           *::-webkit-scrollbar-thumb { background: linear-gradient(180deg, ${t.accent}60, ${t.accent2}60); border-radius: 4px; border: 1px solid ${t.accent}15; transition: background 0.3s; }
           *::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, ${t.accent}90, ${t.accent2}90); box-shadow: 0 0 8px ${t.accent}40; }
           *::-webkit-scrollbar-thumb:active { background: linear-gradient(180deg, ${t.accent}, ${t.accent2}); }
-          html { scroll-behavior: smooth; }
+          html { scroll-behavior: ${motionOK ? "smooth" : "auto"}; }
+          a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid ${t.accent};
+            outline-offset: 3px;
+            border-radius: 4px;
+          }
         `}</style>
         <InteractiveBackground />
         <div style={{
@@ -1018,6 +1686,39 @@ export default function Portfolio() {
           pointerEvents: "none", zIndex: 1,
           background: `repeating-linear-gradient(0deg, transparent, transparent 2px, ${t.scanline} 2px, ${t.scanline} 4px)`,
         }} />
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} actions={paletteActions} />
+        <Terminal
+          open={terminalOpen}
+          onClose={() => setTerminalOpen(false)}
+          scrollTo={scrollTo}
+          toggleTheme={toggle}
+          toggleMotion={toggleMotion}
+        />
+        <button
+          onClick={toggleMotion}
+          aria-label={motionOK ? "Pause background animations" : "Play background animations"}
+          title={motionOK ? "Pause animations" : "Play animations"}
+          style={{
+            position: "fixed",
+            left: isMobile ? "14px" : "20px",
+            bottom: isMobile ? "14px" : "20px",
+            zIndex: 120,
+            width: "38px", height: "38px",
+            borderRadius: "50%",
+            border: `1px solid ${t.border}`,
+            background: t.navBg,
+            backdropFilter: "blur(12px)",
+            color: t.textSecondary,
+            cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "11px",
+            transition: "all 0.3s",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = t.accent; e.currentTarget.style.borderColor = `${t.accent}60`; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = t.textSecondary; e.currentTarget.style.borderColor = t.border; }}
+        >
+          {motionOK ? <FaPause /> : <FaPlay style={{ marginLeft: "2px" }} />}
+        </button>
         {isDesktop && (
           <nav style={{
             position: "fixed", right: "32px", top: "50%",
@@ -1034,6 +1735,14 @@ export default function Portfolio() {
             ))}
           </nav>
         )}
+        <div style={{
+          position: "fixed", top: 0, left: 0, height: "2px",
+          width: `${Math.min(100, (scrollY / Math.max(1, (typeof document !== "undefined" ? document.documentElement.scrollHeight : 1) - (typeof window !== "undefined" ? window.innerHeight : 0))) * 100)}%`,
+          background: `linear-gradient(90deg, ${t.accent}, ${t.accent2})`,
+          boxShadow: `0 0 10px ${t.accent}80`,
+          zIndex: 200,
+          pointerEvents: "none",
+        }} />
         <header style={{
           position: 'fixed',
           top: 0,
@@ -1058,20 +1767,39 @@ export default function Portfolio() {
             <span style={{ color: t.textSecondary }}>.</span>
           </div>
           {!isMobile && (
-            <div style={{ display: "flex", gap: isTablet ? "20px" : "32px" }}>
+            <div style={{ display: "flex", gap: isTablet ? "20px" : "32px", alignItems: "center" }}>
               {navItems.map(s => (
-                <span
+                <button
                   key={s}
                   onClick={() => scrollTo(s.toLowerCase())}
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: "12px", letterSpacing: "1.5px", textTransform: "uppercase",
                     color: t.textHeader, cursor: "pointer", transition: "color 0.3s",
+                    background: "none", border: "none", padding: 0,
                   }}
                   onMouseEnter={e => e.target.style.color = t.accent}
                   onMouseLeave={e => e.target.style.color = t.textHeader}
-                >{s}</span>
+                >{s}</button>
               ))}
+              <button
+                onClick={() => setPaletteOpen(true)}
+                aria-label="Open command palette"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px", letterSpacing: "1px",
+                  color: t.textSecondary,
+                  background: t.surface,
+                  border: `1px solid ${t.border}`,
+                  borderRadius: "6px",
+                  padding: "5px 10px",
+                  cursor: "pointer",
+                  transition: "all 0.3s",
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = t.accent; e.currentTarget.style.borderColor = `${t.accent}60`; }}
+                onMouseLeave={e => { e.currentTarget.style.color = t.textSecondary; e.currentTarget.style.borderColor = t.border; }}
+              >CTRL K</button>
             </div>
           )}
           {isMobile && (
@@ -1088,7 +1816,7 @@ export default function Portfolio() {
             animation: "slideIn 0.3s ease",
           }}>
             {navItems.map((s, i) => (
-              <span
+              <button
                 key={s}
                 onClick={() => scrollTo(s.toLowerCase())}
                 style={{
@@ -1096,10 +1824,11 @@ export default function Portfolio() {
                   fontSize: "28px", fontWeight: 600,
                   color: t.text, cursor: "pointer",
                   transition: "color 0.3s",
-                  opacity: 0,
-                  animation: `slideIn 0.4s ease ${i * 0.08}s forwards`,
+                  background: "none", border: "none", padding: 0,
+                  opacity: motionOK ? 0 : 1,
+                  animation: motionOK ? `slideIn 0.4s ease ${i * 0.08}s forwards` : "none",
                 }}
-              >{s}</span>
+              >{s}</button>
             ))}
           </div>
         )}
@@ -1112,7 +1841,7 @@ export default function Portfolio() {
             position: "absolute", inset: 0,
             backgroundImage: `linear-gradient(${t.accent}08 1px, transparent 1px), linear-gradient(90deg, ${t.accent}08 1px, transparent 1px)`,
             backgroundSize: isMobile ? "40px 40px" : "60px 60px",
-            animation: "gridShift 20s linear infinite",
+            animation: motionOK ? "gridShift 20s linear infinite" : "none",
             maskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)",
             WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)",
           }} />
@@ -1165,6 +1894,7 @@ export default function Portfolio() {
                 minHeight: isMobile ? "28px" : "32px",
               }}>
                 <TypeWriter texts={[
+                  "AI Developer Intern @ ORIX",
                   "Full-Stack Software Engineer",
                   "Cloud & AI Enthusiast",
                   "MS CS @ Indiana University",
@@ -1241,11 +1971,11 @@ export default function Portfolio() {
             </div>
           </div>
 
-          <div style={{
+          {/* <div style={{
             position: "absolute", bottom: isMobile ? "24px" : "48px", left: "50%",
             transform: "translateX(-50%)",
             display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
-            animation: "float 3s ease-in-out infinite",
+            animation: motionOK ? "float 3s ease-in-out infinite" : "none",
           }}>
             <span style={{
               fontFamily: "'JetBrains Mono', monospace",
@@ -1257,7 +1987,7 @@ export default function Portfolio() {
               width: "1px", height: "40px",
               background: `linear-gradient(180deg, ${t.accent}80, transparent)`,
             }} />
-          </div>
+          </div> */}
         </section>
 
         <section id="about" style={{
@@ -1274,75 +2004,91 @@ export default function Portfolio() {
               fontFamily: "'Syne', sans-serif",
               fontSize: isMobile ? "clamp(28px, 8vw, 36px)" : "clamp(32px, 4vw, 48px)",
               fontWeight: 700,
-              margin: "0 0 40px 0", letterSpacing: "-1px",
+              margin: "0 0 24px 0", letterSpacing: "-1px",
             }}>
-              Building the <span style={{ color: t.accent }}>future</span>,<br />
-              one commit at a time.
+              Building systems that make<br />
+              people <span style={{
+                background: `linear-gradient(135deg, ${t.accent}, ${t.accent2})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>more capable</span>.
             </h2>
+            <div style={{
+              display: "flex", flexWrap: "wrap", gap: "10px",
+              marginBottom: isMobile ? "32px" : "48px",
+            }}>
+              {["AI Systems", "Distributed Systems", "Developer Infrastructure"].map((tag, i) => (
+                <span key={i} style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px", letterSpacing: "1.5px", textTransform: "uppercase",
+                  color: t.textSecondary,
+                  padding: "6px 14px", borderRadius: "20px",
+                  border: `1px solid ${t.border}`,
+                  background: t.surface,
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                }}>
+                  <span style={{
+                    width: "5px", height: "5px", borderRadius: "50%",
+                    background: i % 2 === 0 ? t.accent : t.accent2,
+                    boxShadow: `0 0 6px ${i % 2 === 0 ? t.accent : t.accent2}`,
+                  }} />
+                  {tag}
+                </span>
+              ))}
+            </div>
           </FadeInSection>
 
           <FadeInSection delay={0.2}>
             <div style={{
               display: "grid",
               gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: isMobile ? "32px" : "48px",
+              gap: isMobile ? "24px" : "48px",
             }}>
               <div>
                 <p style={{
                   fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: isMobile ? "14px" : "16px", color: t.textSecondary,
-                  lineHeight: 1.8, margin: "0 0 20px 0",
+                  fontSize: isMobile ? "16px" : "18px", color: t.text,
+                  lineHeight: 1.8, margin: "0 0 20px 0", fontWeight: 300,
+                  borderLeft: `2px solid ${t.accent}`,
+                  paddingLeft: isMobile ? "16px" : "24px",
                 }}>
-                  I'm a Master's student in Computer Science at Indiana University Bloomington with 1.5+ years of industry experience as a Software Analyst at Nomura Holdings in Mumbai.
+                  I've always been drawn to problems where technology can remove friction and help people do their best work. That curiosity has shaped every stage of my journey, from building AR/VR tools for surgical planning at <span style={{ color: t.accent }}>Tata Research</span>, to modernizing enterprise platforms at <span style={{ color: t.accent }}>Nomura</span>, and now designing AI systems at <span style={{ color: t.accent }}>ORIX</span> that turn hundreds of daily documents into searchable knowledge and natural-language workflows.
                 </p>
                 <p style={{
                   fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: isMobile ? "14px" : "16px", color: t.textSecondary,
-                  lineHeight: 1.8, margin: 0,
+                  fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
+                  lineHeight: 1.85, margin: 0,
                 }}>
-                  At Nomura, I modernized enterprise portals, architected scalable microservices, integrated AI-powered dashboards, and streamlined CI/CD onboarding for 50+ teams globally. I'm passionate about building high-impact systems at the intersection of AI, cloud, and full-stack development.
+                  Currently I'm pursuing a Master's in Computer Science at Indiana University Bloomington while exploring the intersection of <span style={{ color: t.text }}>AI, distributed systems, and developer infrastructure</span>. I enjoy building software where machine learning, cloud infrastructure, and thoughtful engineering come together, not as isolated technologies but as dependable systems that people can trust every single day.
                 </p>
               </div>
               <div>
                 <p style={{
                   fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: isMobile ? "14px" : "16px", color: t.textSecondary,
-                  lineHeight: 1.8, margin: "0 0 20px 0",
+                  fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
+                  lineHeight: 1.85, margin: "0 0 20px 0",
                 }}>
-                  My background spans AR/VR medical research at TRDDC (Tata), ML-powered diversity platforms, and intent-aware AI workspace agents. I've been a finalist at Smart India Hackathon and KakushIN, and secured top positions at IIT Delhi and IIT BHU competitions.
+                  What excites me most is not simply using the latest technology. It's understanding a problem deeply enough to build the right solution. Whether that means shrinking a process from weeks to minutes, designing <span style={{ color: t.accent2 }}>production-ready RAG pipelines</span>, or creating tools that help engineers evaluate and ship LLMs with confidence, I love turning complex ideas into products that deliver <span style={{ color: t.text }}>measurable impact</span>.
                 </p>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: isMobile ? "12px" : "16px",
-                  marginTop: "24px",
+                <p style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
+                  lineHeight: 1.85, margin: 0,
                 }}>
-                  {[
-                    { num: "1.5+", label: "Years Experience" },
-                    { num: "200+", label: "Users Impacted" },
-                    { num: "84%", label: "Load Time Reduced" },
-                    { num: "50+", label: "Teams Onboarded" },
-                  ].map((stat, i) => (
-                    <div key={i} style={{
-                      padding: isMobile ? "16px" : "20px",
-                      borderRadius: "12px",
-                      border: `1px solid ${t.border}`, background: t.cardBg,
-                    }}>
-                      <div style={{
-                        fontFamily: "'Syne', sans-serif",
-                        fontSize: isMobile ? "22px" : "28px", fontWeight: 800,
-                        background: `linear-gradient(135deg, ${t.accent}, ${t.accent2})`,
-                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                      }}>{stat.num}</div>
-                      <div style={{
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: isMobile ? "10px" : "11px", color: t.textMuted,
-                        letterSpacing: "1px", textTransform: "uppercase", marginTop: "4px",
-                      }}>{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
+                  That same curiosity carries well beyond my day-to-day work. I'm constantly experimenting with new AI systems, competing in hackathons, mentoring aspiring developers, and building side projects that push me to learn something new. I believe the best engineers <span style={{ color: t.text }}>never stop learning</span>, and every project, whether at work or on a weekend, is another chance to build something useful and leave the people who use it a little better off than before.
+                </p>
               </div>
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
+              gap: isMobile ? "12px" : "16px",
+              marginTop: isMobile ? "40px" : "56px",
+            }}>
+              <StatCard value={2} suffix="+" label="Years Industry Experience" isMobile={isMobile} />
+              <StatCard value={85} suffix="K+" label="Documents Indexed" isMobile={isMobile} />
+              <StatCard value={100} suffix="+" label="Engineering Hours Saved" isMobile={isMobile} />
+              <StatCard value={91} suffix="%" label="API Cost Reduction" isMobile={isMobile} />
             </div>
           </FadeInSection>
         </section>
@@ -1371,6 +2117,35 @@ export default function Portfolio() {
             <FadeInSection delay={0.1}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
+                  role="AI Developer Intern" company="ORIX"
+                  period="May 2026 – Present" location="Remote, USA"
+                  tech="Azure AI · Document Intelligence · AI Search · Databricks · Python · RAG · LLMs"
+                  bullets={[
+                    "Architected an event-driven Azure document-ingestion pipeline processing 300–400 daily documents into an 85,000+ document knowledge base using AI Document Intelligence, semantic chunking, and Azure AI Search.",
+                    "Engineered a Retrieval-Augmented Generation (RAG) agent with hybrid vector + keyword search, reranking, and prompt orchestration, reducing manual document-discovery workflows by 70%.",
+                    "Built a natural-language analytics workflow on Azure Databricks over millions of loan-portfolio rows, turning plain-English questions into generated SQL and cutting query creation time from 10 minutes to 15–20 seconds.",
+                  ]}
+                />
+                {isDesktop && motionOK && (
+                  <div style={{
+                    position: "absolute",
+                    top: "50%",
+                    right: "-30px",
+                    transform: "translateY(-50%) translateX(55%)",
+                    width: "280px",
+                    height: "280px",
+                    opacity: 0.85,
+                    pointerEvents: "none",
+                  }}>
+                    <RobotVisual />
+                  </div>
+                )}
+              </div>
+            </FadeInSection>
+
+            <FadeInSection delay={0.2}>
+              <div style={{ position: "relative" }}>
+                <TimelineCard
                   role="Software Analyst" company="Nomura Holdings"
                   period="July 2024 – July 2025" location="Mumbai, India"
                   tech="React.js · Node.js · Python · Java (Spring Boot) · Neo4j · Docker · Kubernetes"
@@ -1382,12 +2157,12 @@ export default function Portfolio() {
                     "Optimized large-scale data processing, reduced API latency by 20%, and built a Python–Neo4j graph analysis tool.",
                   ]}
                 />
-                {isDesktop && (
+                {isDesktop && motionOK && (
                   <div style={{
                     position: "absolute",
                     top: "50%",
-                    right: "-30px",
-                    transform: "translateY(-50%) translateX(55%)",
+                    left: "-30px",
+                    transform: "translateY(-50%) translateX(-55%)",
                     width: "280px",
                     height: "280px",
                     opacity: 0.85,
@@ -1399,7 +2174,7 @@ export default function Portfolio() {
               </div>
             </FadeInSection>
 
-            <FadeInSection delay={0.2}>
+            <FadeInSection delay={0.3}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="Software Developer Intern" company="Nomura Holdings"
@@ -1411,12 +2186,12 @@ export default function Portfolio() {
                     "Redesigned the portal UI with 20+ reusable components, reducing insight extraction time by 30% for 1,000+ users.",
                   ]}
                 />
-                {isDesktop && (
+                {isDesktop && motionOK && (
                   <div style={{
                     position: "absolute",
                     top: "50%",
-                    left: "-30px",
-                    transform: "translateY(-50%) translateX(-55%)",
+                    right: "-30px",
+                    transform: "translateY(-50%) translateX(55%)",
                     width: "280px",
                     height: "280px",
                     opacity: 0.85,
@@ -1428,7 +2203,7 @@ export default function Portfolio() {
               </div>
             </FadeInSection>
 
-            <FadeInSection delay={0.3}>
+            <FadeInSection delay={0.4}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="AR/VR Developer" company="Tata Research Development and Design Centre"
@@ -1439,12 +2214,12 @@ export default function Portfolio() {
                     "Transformed the 3D model into an immersive AR/VR experience embedded in a ReactJS web platform for interactive surgical exploration.",
                   ]}
                 />
-                {isDesktop && (
+                {isDesktop && motionOK && (
                   <div style={{
                     position: "absolute",
                     top: "50%",
-                    right: "-30px",
-                    transform: "translateY(-50%) translateX(55%)",
+                    left: "-30px",
+                    transform: "translateY(-50%) translateX(-55%)",
                     width: "280px",
                     height: "280px",
                     opacity: 0.85,
@@ -1493,7 +2268,7 @@ export default function Portfolio() {
               <div style={{
                 position: "absolute", top: "24px", right: "32px",
                 opacity: 0.2,
-                animation: "rocketPulse 3s ease-in-out infinite",
+                animation: motionOK ? "rocketPulse 3s ease-in-out infinite" : "none",
               }}><RocketIcon size={isMobile ? 40 : 64} /></div>
 
               <div style={{
@@ -1641,7 +2416,28 @@ export default function Portfolio() {
             gap: "24px",
           }}>
             <FadeInSection delay={0.1}>
+              <ProjectCard title="Relay – Cost-Optimizing LLM Gateway"
+                date="July 2026" link="https://github.com/Nishant2306/relay"
+                tech="Python · FastAPI · Redis Stack · PostgreSQL · Prometheus · Grafana · Docker" icon={(props) => <RocketIcon {...props} />} gradient={t.accent}
+                bullets={[
+                  "OpenAI-compatible LLM gateway with semantic caching via local embeddings (95% hit rate) and complexity-based model routing, cutting simulated API spend 91% over 67k-request load tests.",
+                  "Lua token-bucket rate limiting, per-team budgets, and circuit-breaker failover, sustaining zero dropped requests in provider-outage drills at 3.6 ms p50 overhead, monitored via Prometheus/Grafana.",
+                ]}
+              />
+            </FadeInSection>
+            <FadeInSection delay={0.2}>
+              <ProjectCard title="Argus – LLM Evaluation & Observability Platform"
+                date="May 2026" link="https://github.com/Nishant2306/argus"
+                tech="Python · FastAPI · PostgreSQL · Streamlit · GitHub Actions" icon={(props) => <StarBadgeIcon {...props} />} gradient={t.accent2}
+                bullets={[
+                  "Self-improving LLM evaluation platform tracing multi-step pipelines end to end, auto-mining production traces into eval datasets via HDBSCAN + LLM labeling at 92% verified precision.",
+                  "80-case adversarial benchmark with a six-flag safety auto-fail judge and a CI gate with paired McNemar tests that caught 100% of injected prompt regressions pre-merge, plus prompt versioning with rollback and A/B experiments.",
+                ]}
+              />
+            </FadeInSection>
+            <FadeInSection delay={0.1}>
               <ProjectCard title="Cue – Intent-Aware AI Workspace Agent"
+                date="February 2026" link="https://github.com/Siriapps/Cue"
                 tech="Gemini · React · MongoDB Atlas · MCP" icon={(props) => <BrainIcon {...props} />} gradient={t.accent}
                 bullets={[
                   "Predictive Chrome extension using Gemini and MongoDB Atlas that forecasts the user's next five tasks from browsing history.",
@@ -1651,6 +2447,7 @@ export default function Portfolio() {
             </FadeInSection>
             <FadeInSection delay={0.2}>
               <ProjectCard title="DIVDASH"
+                date="October 2023" link="https://github.com/Nishant2306/DiveDash"
                 tech="React.js · Node.js · Firebase · TensorFlow · AWS Bedrock" icon={(props) => <ChartIcon {...props} />} gradient={t.accent2}
                 bullets={[
                   "Diversity & Inclusion metrics dashboard with AWS Bedrock for generative AI insights and NLP-powered summaries.",
@@ -1658,8 +2455,9 @@ export default function Portfolio() {
                 ]}
               />
             </FadeInSection>
-            <FadeInSection delay={0.3}>
+            <FadeInSection delay={0.1}>
               <ProjectCard title="DISHA"
+                date="August 2024" link="https://github.com/satty26/disha"
                 tech="Dart · Flutter · AWS SageMaker · Android Studio" icon={(props) => <GradCapIcon {...props} />} gradient="#FFD700"
                 bullets={[
                   "Android and web platform connecting 2,000+ students with 500+ professionals using ML models on AWS SageMaker.",
@@ -1667,8 +2465,9 @@ export default function Portfolio() {
                 ]}
               />
             </FadeInSection>
-            <FadeInSection delay={0.4}>
+            <FadeInSection delay={0.2}>
               <ProjectCard title="AID – Assistive Interface for the Deaf"
+                date="January 2023"
                 tech="Flutter · TensorFlow · Firebase · Blender" icon={(props) => <HandSignIcon {...props} />} gradient="#00d4ff"
                 bullets={[
                   "Android app using Flutter, Firebase, and TensorFlow to assist the hearing impaired in public settings.",
@@ -1787,7 +2586,7 @@ export default function Portfolio() {
                 <div style={{
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontSize: isMobile ? "13px" : "14px", color: t.textSecondary,
-                }}>B.Tech, Computer Science & Engineering — GPA: 8.04/10</div>
+                }}>B.Tech, Computer Science & Engineering · GPA: 8.04/10</div>
                 <div style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: "11px", color: t.textMuted, marginTop: "4px",
@@ -1969,6 +2768,14 @@ export default function Portfolio() {
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: "11px", color: t.textMuted, letterSpacing: "1px",
             }}>© 2026 Nishant Chaudhary</div>
+            {!isMobile && (
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "10px", color: t.textMuted, letterSpacing: "1px",
+              }}>
+                press <span style={{ color: t.accent }}>`</span> for terminal · <span style={{ color: t.accent }}>ctrl+k</span> to navigate
+              </div>
+            )}
             <div style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: "11px", color: t.textMuted, letterSpacing: "1px",
