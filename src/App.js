@@ -1356,7 +1356,6 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
   const COMMANDS = {
     help: () => [
       "available commands:",
-      "  hi / hello    get a friendly wave",
       "  whoami        who is this guy",
       "  about         a short intro",
       "  projects      list projects with repo links",
@@ -1368,7 +1367,7 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "  github        open my GitHub",
       "  linkedin      open my LinkedIn",
       "  motion        toggle animations",
-      "  sudo hire-me  recruiter shortcut 👀",
+      "  sudo ...  recruiter shortcut 👀",
       "  goto <section>  jump to a section",
       "  clear         clear the terminal",
       "  exit          close the terminal",
