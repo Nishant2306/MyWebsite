@@ -1231,12 +1231,109 @@ const CommandPalette = ({ open, onClose, actions }) => {
   );
 };
 
+const GREETING_FRAMES = [
+  [
+    "  _   _ ___ ",
+    " | | | |_ _|",
+    " | |_| || | ",
+    " |  _  || | ",
+    " |_| |_|___|",
+    "",
+    "*      \\o     ",
+    "        |\\    ",
+    "       / \\    ",
+  ].join("\n"),
+  [
+    "  _   _ ___ ",
+    " | | | |_ _|",
+    " | |_| || | ",
+    " |  _  || | ",
+    " |_| |_|___|",
+    "",
+    "        o/    *",
+    "       /|      ",
+    "       / \\     ",
+  ].join("\n"),
+  [
+    "  _   _ ___ ",
+    " | | | |_ _|",
+    " | |_| || | ",
+    " |  _  || | ",
+    " |_| |_|___|",
+    "",
+    "       \\o/     ",
+    "        |       ",
+    "       / \\      ",
+  ].join("\n"),
+];
+
+const isGreetingCommand = (value) => {
+  const normalized = value
+    .toLowerCase()
+    .trim()
+    .replace(/’/g, "'")
+    .replace(/[!?.,:;]+$/g, "")
+    .replace(/\s+/g, " ");
+
+  // Matches greetings such as: hi, hiiii, hello there, heyyy,
+  // good morning, what's up, howdy, namaste, hola, etc.
+  return /^(?:h+i+|he+l+o+|he+y+|hiya|howdy|yo+|sup|wass?up|greetings?|namaste|namaskar|hola|bonjour|ciao|(?:good\s+)?(?:morning|afternoon|evening)|good\s+night|what(?:'s| is)?\s+up)\b/i.test(normalized);
+};
+
+const AsciiGreeting = ({ motionOK }) => {
+  const [frame, setFrame] = useState(motionOK ? 0 : 2);
+
+  useEffect(() => {
+    if (!motionOK) {
+      setFrame(2);
+      return undefined;
+    }
+
+    let step = 0;
+    const intervalId = window.setInterval(() => {
+      step += 1;
+      setFrame(step % GREETING_FRAMES.length);
+
+      // Wave a few times, then leave the final greeting visible.
+      if (step >= 11) window.clearInterval(intervalId);
+    }, 190);
+
+    return () => window.clearInterval(intervalId);
+  }, [motionOK]);
+
+  return (
+    <div
+      role="img"
+      aria-label="An ASCII character waving hello"
+      style={{ margin: "6px 0 8px" }}
+    >
+      <pre
+        aria-hidden="true"
+        style={{
+          margin: 0,
+          display: "inline-block",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: "12px",
+          lineHeight: 1.15,
+          color: "#00ffc8",
+          textShadow: "0 0 10px rgba(0,255,200,0.45)",
+          whiteSpace: "pre",
+          userSelect: "none",
+        }}
+      >
+        {GREETING_FRAMES[frame]}
+      </pre>
+    </div>
+  );
+};
+
 const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
-  const { mode } = useTheme();
+  const { mode, motionOK } = useTheme();
   const t = themes[mode];
   const { isMobile } = useResponsive();
   const [lines, setLines] = useState([
-    { type: "out", text: "nishcodes terminal v1.0 - type 'help' to get started." },
+    { type: "out", text: "nishcodes terminal v1.1 - type 'help' to get started." },
+    { type: "hint", text: "recruiter shortcut: try 'sudo ...' 👀" },
   ]);
   const [input, setInput] = useState("");
   const [cmdHistory, setCmdHistory] = useState([]);
@@ -1259,6 +1356,7 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
   const COMMANDS = {
     help: () => [
       "available commands:",
+      "  hi / hello    get a friendly wave",
       "  whoami        who is this guy",
       "  about         a short intro",
       "  projects      list projects with repo links",
@@ -1270,6 +1368,7 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "  github        open my GitHub",
       "  linkedin      open my LinkedIn",
       "  motion        toggle animations",
+      "  sudo hire-me  recruiter shortcut 👀",
       "  goto <section>  jump to a section",
       "  clear         clear the terminal",
       "  exit          close the terminal",
@@ -1341,6 +1440,16 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
     const echo = { type: "in", text: cmd };
     const lower = cmd.toLowerCase();
 
+    if (isGreetingCommand(cmd)) {
+      print([
+        echo,
+        { type: "wave" },
+        { type: "out", text: "Hi there! Thanks for stopping by." },
+        { type: "hint", text: "Type 'help' to explore — or try 'sudo hire-me' if you have an opportunity." },
+      ]);
+      return;
+    }
+
     if (lower === "clear") {
       setLines([]);
       return;
@@ -1362,7 +1471,12 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       return;
     }
     if (lower === "sudo hire-me" || lower === "sudo hire me") {
-      print([echo, { type: "out", text: "permission granted. ✔  email nishantchaudhary0512@gmail.com to complete the process." }]);
+      print([
+        echo,
+        { type: "out", text: "[sudo] validating recruiter permissions..." },
+        { type: "success", text: "permission granted. ✔" },
+        { type: "out", text: "email nishantchaudhary0512@gmail.com to complete the process." },
+      ]);
       return;
     }
     if (lower.startsWith("sudo")) {
@@ -1446,16 +1560,31 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
         >✕</button>
       </div>
       <div ref={bodyRef} style={{ flex: 1, overflowY: "auto", padding: "14px 16px" }}>
-        {lines.map((l, i) => (
-          <div key={i} style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "12px", lineHeight: 1.8,
-            whiteSpace: "pre-wrap", wordBreak: "break-word",
-            color: l.type === "in" ? "#00ffc8" : "rgba(255,255,255,0.7)",
-          }}>
-            {l.type === "in" ? `❯ ${l.text}` : l.text}
-          </div>
-        ))}
+        {lines.map((l, i) => {
+          if (l.type === "wave") {
+            return <AsciiGreeting key={`wave-${i}`} motionOK={motionOK} />;
+          }
+
+          const lineColor =
+            l.type === "in"
+              ? "#00ffc8"
+              : l.type === "hint"
+                ? "#c7a7ff"
+                : l.type === "success"
+                  ? "#7dffb2"
+                  : "rgba(255,255,255,0.7)";
+
+          return (
+            <div key={i} style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "12px", lineHeight: 1.8,
+              whiteSpace: "pre-wrap", wordBreak: "break-word",
+              color: lineColor,
+            }}>
+              {l.type === "in" ? `❯ ${l.text}` : l.text}
+            </div>
+          );
+        })}
       </div>
       <div style={{
         display: "flex", alignItems: "center", gap: "10px",
