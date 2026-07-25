@@ -1,0 +1,14 @@
+{
+  "name": "visitor-notifier",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Emails a notification the first time someone visits nishcodes.com",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}
