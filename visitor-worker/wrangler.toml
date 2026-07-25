@@ -5,23 +5,12 @@ compatibility_date = "2025-01-01"
 [vars]
 EMAIL_TO = "nishantchaudhary0512@gmail.com"
 
-# Resend lets you send from onboarding@resend.dev without verifying a domain,
-# but only to the address your Resend account was created with. Once you verify
-# nishcodes.com in Resend you can switch this to e.g. "Portfolio <visitors@nishcodes.com>".
 EMAIL_FROM = "Portfolio <onboarding@resend.dev>"
 
-# Timestamps in the email are rendered in this zone.
 REPORT_TIMEZONE = "America/Indiana/Indianapolis"
 
-# Only these origins may call the worker.
 ALLOWED_ORIGINS = "https://nishcodes.com,https://www.nishcodes.com,http://localhost:3000"
 
-# Created via: wrangler kv namespace create VISITORS
-# Paste the returned id below.
 [[kv_namespaces]]
 binding = "VISITORS"
-id = "PASTE_KV_NAMESPACE_ID_HERE"
-
-# Secrets are NOT stored here. Set them once with:
-#   wrangler secret put RESEND_API_KEY
-#   wrangler secret put HASH_SALT
+id = "42847c1950e543da8b02a566c17103eb"

@@ -11,7 +11,7 @@
 // Set after deploying the worker (`npm run deploy` in visitor-worker/ prints it).
 const ENDPOINT =
   process.env.REACT_APP_VISITOR_PING_URL ||
-  'https://visitor-notifier.<your-subdomain>.workers.dev';
+  'https://visitor-notifier.nishcodes-visitor-notifier.workers.dev';
 
 const STORAGE_KEY = 'np:seen';
 
