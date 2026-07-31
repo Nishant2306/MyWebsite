@@ -1034,6 +1034,142 @@ const ProjectCard = ({ title, tech, bullets, icon, date, link, live }) => {
   );
 };
 
+// Three pen strokes: "Nishant" (its final flourish crossing the t), the dot on
+// the i, then "Chaudhary" closing with a descender that sweeps back underneath.
+// A moveto has zero path length, so the travelling pen tip jumps the gaps
+// instantly rather than sliding — which is what a pen lift looks like.
+const SIGNATURE_PATH = "M 32 100 C 34 76 36 46 42 25 C 47 46 58 78 70 100 C 74 76 76 46 80 25 C 83 36 88 50 94 58 C 95 73 96 88 98 100 C 100 107 107 96 113 89 C 116 92 119 94 122 93 C 127 93 131 91 132 86 C 133 81 129 79 124 77 C 119 75 115 73 114 68 C 113 63 117 60 122 60 C 128 60 132 62 133 67 C 138 58 143 40 148 25 C 152 12 147 60 147 100 C 149 72 157 62 165 67 C 173 72 170 88 172 100 C 174 107 179 101 183 92 C 187 78 194 62 202 63 C 194 62 187 70 188 82 C 189 93 199 98 204 89 C 206 80 205 92 206 100 C 208 107 213 101 217 92 C 221 78 222 64 224 60 C 227 57 224 82 224 100 C 226 74 234 62 242 67 C 250 72 247 88 249 100 C 251 107 256 101 260 92 C 265 70 268 42 271 25 C 275 12 269 70 271 100 C 274 108 284 106 292 99 C 302 92 308 80 301 70 C 293 60 277 52 264 55 M 96 44 C 97 41 101 41 102 44 M 366 40 C 360 28 344 24 334 34 C 320 46 318 78 332 92 C 342 102 358 98 366 88 C 374 70 378 44 382 25 C 386 12 381 60 381 100 C 383 72 391 62 399 67 C 407 72 404 88 406 100 C 408 107 413 101 417 92 C 421 78 428 62 436 63 C 428 62 421 70 422 82 C 423 93 433 98 438 89 C 440 80 439 92 440 100 C 442 107 447 101 451 92 C 455 78 456 64 458 60 C 461 57 457 86 462 95 C 467 103 474 100 476 90 C 478 78 479 68 480 60 C 481 74 480 88 482 100 C 484 107 489 101 493 92 C 497 80 504 64 512 65 C 504 64 497 72 498 84 C 499 95 509 100 514 91 C 517 74 518 46 520 25 C 523 12 517 70 519 100 C 521 107 526 101 530 92 C 534 74 538 46 542 25 C 546 12 541 60 541 100 C 543 72 551 62 559 67 C 567 72 564 88 566 100 C 568 107 573 101 577 92 C 581 78 588 62 596 63 C 588 62 581 70 582 82 C 583 93 593 98 598 89 C 600 80 599 92 600 100 C 602 107 607 101 611 92 C 613 80 616 69 619 62 C 623 57 631 60 633 66 C 635 76 634 89 636 100 C 638 107 643 101 647 92 C 653 78 654 64 656 60 C 659 57 655 84 658 94 C 661 102 668 101 671 92 C 674 80 676 68 678 60 C 679 76 678 96 674 116 C 673 128 662 137 642 135 C 540 128 360 124 190 131 C 160 132 138 137 128 143";
+
+// stroke-dasharray restarts at every subpath, so a single path element would
+// reveal all three strokes at once. They get their own <path> instead, each
+// drawing during its own slice of the write window.
+const SIGNATURE_STROKES = SIGNATURE_PATH.split(/(?=M )/).map((s) => s.trim()).filter(Boolean);
+
+const SIG_CYCLE = "7.4s";
+const SIG_WRITE_END = 0.649;  // 4.8s writing
+const SIG_HOLD_END = 0.919;   // then held to 6.8s, faded out by 7.4s
+
+const Signature = () => {
+  const { mode, motionOK } = useTheme();
+  const t = themes[mode];
+  const { isMobile } = useResponsive();
+  const pathRefs = useRef([]);
+  const [lengths, setLengths] = useState(null);
+
+  // Measured rather than guessed, so each stroke's slice of the write window is
+  // proportional to how far the pen actually travels along it.
+  useEffect(() => {
+    const measured = pathRefs.current.filter(Boolean).map((el) => el.getTotalLength());
+    if (measured.length === SIGNATURE_STROKES.length) setLengths(measured);
+  }, []);
+
+  const animated = motionOK && lengths !== null;
+  const width = isMobile ? 300 : 460;
+
+  // Constant pen speed: each stroke gets write-time in proportion to its length.
+  const schedule = useMemo(() => {
+    if (!lengths) return null;
+    const total = lengths.reduce((a, b) => a + b, 0);
+    let travelled = 0;
+    return lengths.map((len) => {
+      const start = (travelled / total) * SIG_WRITE_END * 100;
+      travelled += len;
+      return { len, start, end: (travelled / total) * SIG_WRITE_END * 100 };
+    });
+  }, [lengths]);
+
+  const drawKeyframes = schedule
+    ? schedule
+        .map(({ len, start, end }, i) => `
+          @keyframes sigDraw${i} {
+            0% { stroke-dashoffset: ${len.toFixed(2)}; }
+            ${start > 0.001 ? `${start.toFixed(3)}% { stroke-dashoffset: ${len.toFixed(2)}; }` : ""}
+            ${end.toFixed(3)}% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 0; }
+          }`)
+        .join("\n")
+    : "";
+
+  return (
+    <div
+      role="img"
+      aria-label="Nishant Chaudhary, handwritten signature"
+      style={{
+        display: "flex", justifyContent: "center",
+        padding: isMobile ? "0 16px 4px" : "0 24px 8px",
+        // The hero is 100vh with its content centred, so it leaves a tall empty
+        // band below the buttons. Pull the signature up into it, and draw the
+        // About section up to close the rest of the gap.
+        marginTop: isMobile ? "-7vh" : "-15vh",
+        marginBottom: isMobile ? "-2vh" : "-7vh",
+        position: "relative", zIndex: 2,
+      }}
+    >
+      <svg
+        viewBox="20 12 672 144"
+        width={width}
+        height={Math.round(width * (144 / 672))}
+        fill="none"
+        style={{
+          overflow: "visible",
+          // Same teal bloom the cursor trail paints on the canvas.
+          filter: `drop-shadow(0 0 4px ${t.accent}cc) drop-shadow(0 0 13px ${t.accent}66) drop-shadow(0 0 28px ${t.accent2}33)`,
+        }}
+      >
+        <defs>
+          <linearGradient id="signatureStroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={t.accent} />
+            <stop offset="65%" stopColor={t.accent} />
+            <stop offset="100%" stopColor={t.accent2} />
+          </linearGradient>
+          {/* Unbroken copy of every stroke — the pen tip rides this. */}
+          <path id="nishantSignatureGuide" d={SIGNATURE_PATH} fill="none" stroke="none" />
+        </defs>
+        <style>{drawKeyframes}</style>
+        <g
+          style={{
+            // Hidden for the single frame before the strokes have been measured.
+            ...(motionOK && !animated ? { visibility: "hidden" } : null),
+            ...(animated ? { animation: `sigFade ${SIG_CYCLE} ease-in-out infinite` } : null),
+          }}
+        >
+          {SIGNATURE_STROKES.map((d, i) => (
+            <path
+              key={i}
+              ref={(el) => { pathRefs.current[i] = el; }}
+              d={d}
+              stroke="url(#signatureStroke)"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={animated ? {
+                strokeDasharray: lengths[i],
+                // linear, to stay locked to the pen tip's constant-speed motion
+                animation: `sigDraw${i} ${SIG_CYCLE} linear infinite`,
+              } : undefined}
+            />
+          ))}
+        </g>
+        {animated && (
+          <circle r="7" fill={t.accent} opacity="0">
+            <animateMotion
+              dur={SIG_CYCLE} repeatCount="indefinite" calcMode="linear"
+              keyPoints="0;1;1" keyTimes={`0;${SIG_WRITE_END};1`}
+            >
+              <mpath href="#nishantSignatureGuide" />
+            </animateMotion>
+            <animate
+              attributeName="opacity" dur={SIG_CYCLE} repeatCount="indefinite"
+              values="0;1;1;0;0"
+              keyTimes={`0;0.015;${(SIG_WRITE_END - 0.03).toFixed(3)};${(SIG_WRITE_END + 0.01).toFixed(3)};1`}
+            />
+          </circle>
+        )}
+      </svg>
+    </div>
+  );
+};
+
 const NavDot = ({ label, active, onClick }) => {
   const [hovered, setHovered] = useState(false);
   const { mode } = useTheme();
@@ -1871,6 +2007,10 @@ export default function Portfolio() {
           @keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
           @keyframes rocketPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
           @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes sigFade {
+            0%, ${(SIG_HOLD_END * 100).toFixed(1)}% { opacity: 1; }
+            100% { opacity: 0; }
+          }
           @keyframes ctrlKBreathe {
             0%, 100% { box-shadow: 0 0 0 0 ${t.accent}00; border-color: ${t.border}; color: ${t.textSecondary}; }
             50% { box-shadow: 0 0 14px 1px ${t.accent}38; border-color: ${t.accent}70; color: ${t.accent}; }
@@ -2210,6 +2350,8 @@ export default function Portfolio() {
             }} />
           </div> */}
         </section>
+
+        <Signature />
 
         <section id="about" style={{
           padding: `${sectionPy} ${sectionPx}`,
