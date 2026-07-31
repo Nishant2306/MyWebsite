@@ -125,17 +125,37 @@ const InteractiveBackground = () => {
     const MAX_TRAIL = 30;
     const MAX_RIPPLES = 8;
 
+    // Particles, ripples and the cursor trail all live in *document* space.
+    // The canvas itself only ever covers the viewport and is fixed to it; draw()
+    // translates the context by the scroll offset so the document-space maths
+    // below needs no changes. Keeping the element viewport-sized and fixed is
+    // what stops it adding scrollable overflow to the page.
+    const field = { w: 0, h: 0 };
+
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = Math.max(document.body.scrollHeight, window.innerHeight * 5);
+      // clientWidth excludes the scrollbar; innerWidth includes it. Sizing the
+      // bitmap to innerWidth while the element laid out at the narrower content
+      // width was what scaled the whole surface and dragged the cursor glow off
+      // the pointer, worse the further down the page you scrolled.
+      const vw = document.documentElement.clientWidth;
+      const vh = window.innerHeight;
+
+      canvas.width = vw;
+      canvas.height = vh;
+      // Pin the CSS box to the bitmap so the surface is never scaled.
+      canvas.style.width = `${vw}px`;
+      canvas.style.height = `${vh}px`;
+
+      field.w = vw;
+      field.h = Math.max(document.documentElement.scrollHeight, vh);
     };
     resize();
     window.addEventListener("resize", resize);
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * field.w,
+        y: Math.random() * field.h,
         vx: (Math.random() - 0.5) * 0.6,
         vy: (Math.random() - 0.5) * 0.6,
         baseR: Math.random() * 2.5 + 0.5,
@@ -151,8 +171,8 @@ const InteractiveBackground = () => {
 
     for (let i = 0; i < (isMobile ? 2 : 5); i++) {
       attractors.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * field.w,
+        y: Math.random() * field.h,
         strength: 0.02 + Math.random() * 0.03,
         radius: 200 + Math.random() * 200,
         phase: Math.random() * Math.PI * 2,
@@ -163,8 +183,8 @@ const InteractiveBackground = () => {
       if (meteors.length < 3) {
         const side = Math.random();
         meteors.push({
-          x: side > 0.5 ? -50 : canvas.width + 50,
-          y: Math.random() * canvas.height * 0.5,
+          x: side > 0.5 ? -50 : field.w + 50,
+          y: Math.random() * field.h * 0.5,
           vx: (side > 0.5 ? 1 : -1) * (3 + Math.random() * 4),
           vy: 2 + Math.random() * 3,
           life: 1,
@@ -182,7 +202,12 @@ const InteractiveBackground = () => {
 
     const draw = () => {
       frame++;
+      // Clear the bitmap in its own (viewport) coordinates...
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // ...then slide the canvas under the document so everything below can go
+      // on being written in document coordinates.
+      ctx.translate(-window.scrollX, -window.scrollY);
 
       // Convert viewport coords to document coords every frame so the trail
       // stays glued to the cursor even while scrolling (scroll changes the
@@ -277,7 +302,7 @@ const InteractiveBackground = () => {
         m.y += m.vy;
         m.life -= 0.003;
       });
-      meteors = meteors.filter(m => m.life > 0 && m.x > -200 && m.x < canvas.width + 200);
+      meteors = meteors.filter(m => m.life > 0 && m.x > -200 && m.x < field.w + 200);
 
       const connectionMaxCheck = isMobile ? 80 : particles.length;
       particles.forEach((p, i) => {
@@ -335,10 +360,10 @@ const InteractiveBackground = () => {
         p.x += p.vx;
         p.y += p.vy;
 
-        if (p.x < -50) p.x = canvas.width + 50;
-        if (p.x > canvas.width + 50) p.x = -50;
-        if (p.y < -50) p.y = canvas.height + 50;
-        if (p.y > canvas.height + 50) p.y = -50;
+        if (p.x < -50) p.x = field.w + 50;
+        if (p.x > field.w + 50) p.x = -50;
+        if (p.y < -50) p.y = field.h + 50;
+        if (p.y > field.h + 50) p.y = -50;
 
         p.trail.push({ x: p.x, y: p.y });
         if (p.trail.length > 8) p.trail.shift();
@@ -402,8 +427,8 @@ const InteractiveBackground = () => {
 
       if (!isMobile) {
         for (let h = 0; h < 4; h++) {
-          const hx = (canvas.width * (h + 1)) / 5 + Math.sin(frame * 0.003 + h * 2) * 80;
-          const hy = (frame * 0.15 + h * canvas.height * 0.25) % canvas.height;
+          const hx = (field.w * (h + 1)) / 5 + Math.sin(frame * 0.003 + h * 2) * 80;
+          const hy = (frame * 0.15 + h * field.h * 0.25) % field.h;
           const hr = 20 + Math.sin(frame * 0.01 + h) * 8;
           ctx.beginPath();
           for (let s = 0; s <= 6; s++) {
@@ -471,10 +496,15 @@ const InteractiveBackground = () => {
     <canvas
       ref={canvasRef}
       style={{
-        position: "absolute",
+        // Fixed and viewport-sized: an absolutely positioned, document-tall
+        // canvas adds scrollable overflow to the root div (whose overflow-y
+        // computes to auto because overflow-x is hidden), which spawns a second
+        // scrollbar and swallows the first wheel event of every scroll.
+        position: "fixed",
         top: 0,
         left: 0,
-        width: "100%",
+        // Dimensions are set in px by resize(), never here, so the element can
+        // never be laid out at a size the bitmap has to scale to.
         pointerEvents: "none",
         zIndex: 0,
       }}
@@ -1167,6 +1197,93 @@ const Signature = () => {
         )}
       </svg>
     </div>
+  );
+};
+
+// The opening strokes of SIGNATURE_PATH, verbatim: stem, diagonal, stem. The
+// header mark is literally the first letter of the signature that writes itself
+// at the foot of the page, so the two bookend each other.
+const SIGNATURE_N_PATH = "M 32 100 C 34 76 36 46 42 25 C 47 46 58 78 70 100 C 74 76 76 46 80 25";
+
+const LogoMark = ({ onActivate }) => {
+  const { mode, motionOK } = useTheme();
+  const t = themes[mode];
+  const { isMobile } = useResponsive();
+  const pathRef = useRef(null);
+  const [length, setLength] = useState(null);
+  const [hovered, setHovered] = useState(false);
+  // Bumping this remounts the stroke, which restarts the draw on every hover.
+  const [replay, setReplay] = useState(0);
+
+  useEffect(() => {
+    if (pathRef.current) setLength(pathRef.current.getTotalLength());
+  }, []);
+
+  const height = isMobile ? 20 : 24;
+  const width = Math.round(height * (82 / 92));
+  const redrawing = motionOK && length !== null && hovered;
+
+  const enter = () => { setHovered(true); setReplay((r) => r + 1); };
+  const leave = () => setHovered(false);
+
+  return (
+    <button
+      type="button"
+      onClick={onActivate}
+      onMouseEnter={enter}
+      onMouseLeave={leave}
+      onFocus={enter}
+      onBlur={leave}
+      aria-label="Nishant Chaudhary — back to top"
+      style={{
+        background: "none", border: "none", padding: 0,
+        cursor: "pointer", display: "inline-flex", alignItems: "center",
+        lineHeight: 0,
+      }}
+    >
+      <svg
+        width={width}
+        height={height}
+        viewBox="24 17 82 92"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+        style={{
+          overflow: "visible",
+          // The same teal bloom as the cursor trail and the signature.
+          filter: `drop-shadow(0 0 ${hovered ? 5 : 3}px ${t.accent}${hovered ? "cc" : "88"}) drop-shadow(0 0 ${hovered ? 15 : 9}px ${t.accent}55)`,
+          transition: "filter 0.35s",
+        }}
+      >
+        <defs>
+          <linearGradient id="logoMarkStroke" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={t.accent} />
+            <stop offset="100%" stopColor={t.accent2} />
+          </linearGradient>
+        </defs>
+        <path
+          key={replay}
+          ref={pathRef}
+          d={SIGNATURE_N_PATH}
+          stroke="url(#logoMarkStroke)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={length !== null ? {
+            "--logo-len": String(length),
+            strokeDasharray: length,
+            animation: redrawing ? "logoDraw 0.8s cubic-bezier(0.65, 0, 0.35, 1)" : "none",
+          } : undefined}
+        />
+        {/* Lands only once the stroke has finished, the way you'd dot a letter. */}
+        <circle
+          key={`dot-${replay}`}
+          cx="94" cy="96" r="6.5"
+          fill={t.accent}
+          style={{ animation: redrawing ? "logoDot 0.8s ease-out" : "none" }}
+        />
+      </svg>
+    </button>
   );
 };
 
@@ -2007,6 +2124,14 @@ export default function Portfolio() {
           @keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
           @keyframes rocketPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
           @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes logoDraw {
+            from { stroke-dashoffset: var(--logo-len); }
+            to   { stroke-dashoffset: 0; }
+          }
+          @keyframes logoDot {
+            0%, 70% { opacity: 0; }
+            100%    { opacity: 1; }
+          }
           @keyframes sigFade {
             0%, ${(SIG_HOLD_END * 100).toFixed(1)}% { opacity: 1; }
             100% { opacity: 0; }
@@ -2108,13 +2233,7 @@ export default function Portfolio() {
           transition: 'all 0.4s',
         }}
         >
-          <div style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: "20px", fontWeight: 800, letterSpacing: "-0.5px",
-          }}>
-            <span style={{ color: t.accent }}>N</span>
-            <span style={{ color: t.textSecondary }}>.</span>
-          </div>
+          <LogoMark onActivate={() => scrollTo("hero")} />
           {!isMobile && (
             <div style={{ display: "flex", gap: isTablet ? "20px" : "32px", alignItems: "center" }}>
               {navItems.map(s => (
