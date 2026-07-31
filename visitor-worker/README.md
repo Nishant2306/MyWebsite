@@ -3,11 +3,11 @@
 Emails `nishantchaudhary0512@gmail.com` the **first** time a person opens
 nishcodes.com. Repeat visits are silent.
 
-Each email is subject-lined `Visitor #47 — Bloomington, Indiana, US` and ends
+Each email is subject-lined `Visitor #47 - Bloomington, Indiana, US` and ends
 with the all-time unique-visitor total.
 
 - Runs on Cloudflare Workers (free tier), independent of GitHub Pages.
-- No DNS changes — the worker lives on its own `*.workers.dev` URL.
+- No DNS changes - the worker lives on its own `*.workers.dev` URL.
 - Dedupe key is a salted SHA-256 of IP + user-agent, stored in Workers KV.
   The raw IP is never written to storage, and the email shows a masked IP by
   default (`203.0.113.•••`).
@@ -22,7 +22,7 @@ Sign up at [resend.com](https://resend.com) **using nishantchaudhary0512@gmail.c
 then create an API key. The free tier is 3,000 emails/month.
 
 The default sender `onboarding@resend.dev` works with no domain verification,
-but Resend only allows it to send to your own account address — which is exactly
+but Resend only allows it to send to your own account address - which is exactly
 the address we want. If you later verify `nishcodes.com` in Resend, update
 `EMAIL_FROM` in `wrangler.toml`.
 
@@ -50,7 +50,7 @@ npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put HASH_SALT
 ```
 
-`HASH_SALT` is any long random string — it's what stops the stored hashes from
+`HASH_SALT` is any long random string - it's what stops the stored hashes from
 being reversible back to an IP. Generate one with `openssl rand -hex 32`.
 Never change it later or every visitor looks new again.
 
@@ -65,7 +65,7 @@ This prints your worker URL, e.g. `https://visitor-notifier.nishant.workers.dev`
 ### 6. Point the site at it
 
 Put that URL in `ENDPOINT` at the top of [`../src/visitorPing.js`](../src/visitorPing.js),
-then commit and push — the existing GitHub Actions workflow redeploys the site.
+then commit and push - the existing GitHub Actions workflow redeploys the site.
 
 ## Checking on it
 

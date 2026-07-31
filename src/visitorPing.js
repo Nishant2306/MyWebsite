@@ -27,7 +27,7 @@ export default function pingVisitor() {
   try {
     alreadySeen = window.localStorage.getItem(STORAGE_KEY) === '1';
   } catch {
-    // Private mode or blocked storage — fall through and let the worker dedupe.
+    // Private mode or blocked storage - fall through and let the worker dedupe.
   }
   if (alreadySeen) return;
 

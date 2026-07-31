@@ -8,9 +8,10 @@
     <title>Nishant Chaudhary - AI Developer & Full-Stack Engineer</title>
     <meta
       name="description"
-      content="Portfolio of Nishant Chaudhary: AI Developer at ORIX, former Software Analyst at Nomura, MS CS at Indiana University Bloomington. Building RAG pipelines, LLM tooling, and full-stack systems."
+      content="Portfolio of Nishant Chaudhary: AI Developer at ORIX, former Software Engineer at Nomura, MS CS at Indiana University Bloomington. Building RAG pipelines, LLM tooling, and full-stack systems."
     />
     <meta name="author" content="Nishant Chaudhary" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://nishcodes.com/" />
 
     <!-- Open Graph (LinkedIn, Slack, WhatsApp, Discord previews) -->
@@ -25,6 +26,7 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="nishcodes.com" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X card -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -41,27 +43,104 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Nishant Niranjan Singh Chaudhary",
-        "alternateName": "Nishant Chaudhary",
-        "url": "https://nishcodes.com",
-        "image": "https://nishcodes.com/og-image.png",
-        "jobTitle": "AI Developer",
-        "worksFor": { "@type": "Organization", "name": "ORIX" },
-        "alumniOf": [
-          { "@type": "CollegeOrUniversity", "name": "Indiana University Bloomington" },
-          { "@type": "CollegeOrUniversity", "name": "Indian Institute of Information Technology, Pune" }
-        ],
-        "knowsAbout": ["Artificial Intelligence", "RAG", "LLM Evaluation", "Full-Stack Development", "Cloud Computing", "Distributed Systems"],
-        "sameAs": [
-          "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/",
-          "https://github.com/Nishant2306"
-        ]
+        "@type": "ProfilePage",
+        "mainEntityOfPage": "https://nishcodes.com/",
+        "mainEntity": {
+          "@type": "Person",
+          "@id": "https://nishcodes.com/#nishant-chaudhary",
+          "name": "Nishant Chaudhary",
+          "alternateName": ["Nishant Niranjan Singh Chaudhary", "Nishant"],
+          "url": "https://nishcodes.com/",
+          "image": "https://nishcodes.com/og-image.png",
+          "email": "mailto:nishantchaudhary0512@gmail.com",
+          "jobTitle": "AI Developer",
+          "description": "AI Developer building RAG pipelines and LLM tooling at ORIX, and a Master's student in Computer Science at Indiana University Bloomington. Previously a Software Engineer at Nomura Holdings.",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "ORIX"
+          },
+          "homeLocation": {
+            "@type": "Place",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Bloomington",
+              "addressRegion": "IN",
+              "addressCountry": "US"
+            }
+          },
+          "alumniOf": [
+            {
+              "@type": "CollegeOrUniversity",
+              "name": "Indiana University Bloomington",
+              "sameAs": "https://en.wikipedia.org/wiki/Indiana_University_Bloomington"
+            },
+            {
+              "@type": "CollegeOrUniversity",
+              "name": "Indian Institute of Information Technology, Pune",
+              "sameAs": "https://en.wikipedia.org/wiki/Indian_Institute_of_Information_Technology,_Pune"
+            }
+          ],
+          "knowsAbout": [
+            "Artificial Intelligence",
+            "Retrieval-Augmented Generation",
+            "LLM Evaluation",
+            "Large Language Models",
+            "Full-Stack Development",
+            "Distributed Systems",
+            "Cloud Computing",
+            "Developer Infrastructure"
+          ],
+          "sameAs": [
+            "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/",
+            "https://github.com/Nishant2306"
+          ]
+        }
       }
     </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <!--
+      The app is client-rendered, so the served HTML is otherwise empty. Google
+      renders JavaScript, but weaker crawlers and link previewers don't - this
+      gives them real text to index. Never shown to normal visitors.
+    -->
+    <noscript>
+      <h1>Nishant Chaudhary</h1>
+      <p>
+        AI Developer at ORIX and a Master's student in Computer Science at
+        Indiana University Bloomington. Previously a Software Engineer at Nomura
+        Holdings in Mumbai, and a Software Developer Intern at Tata Consultancy
+        Services.
+      </p>
+
+      <h2>Experience</h2>
+      <ul>
+        <li><strong>ORIX</strong> - AI Developer Intern, May 2026 to present. Event-driven Azure ingestion pipelines over an 85,000+ document knowledge base, a Retrieval-Augmented Generation agent with hybrid retrieval and reranking, and a natural-language analytics layer on Azure Databricks.</li>
+        <li><strong>Nomura Holdings</strong> - Software Engineer, July 2024 to July 2025. Angular to React migration of a 40+ page enterprise portal, Java Spring Boot microservices, and a Neo4j dependency graph across 100+ production applications.</li>
+        <li><strong>Nomura Holdings</strong> - Software Developer Intern, January to June 2024. Contract testing with Pact Broker, lifting coverage from 48% to 83%.</li>
+        <li><strong>Tata Consultancy Services</strong> - Software Developer Intern, May to July 2023. Medical imaging pipeline over MRI and CT volumes, and an AR/VR particle-trajectory simulator.</li>
+      </ul>
+
+      <h2>Projects</h2>
+      <ul>
+        <li><strong>Relay</strong> - an OpenAI-compatible LLM cost gateway with semantic caching and complexity-based model routing. <a href="https://nishant2306.github.io/relay/">Live demo</a>, <a href="https://github.com/Nishant2306/relay">source</a>.</li>
+        <li><strong>Argus</strong> - an LLM evaluation platform with trace mining, an adversarial safety benchmark, and a CI regression gate. <a href="https://nishant2306.github.io/argus/">Live demo</a>, <a href="https://github.com/Nishant2306/argus">source</a>.</li>
+        <li><strong>Cue</strong> - an AI workspace agent pairing Gemini with MongoDB Atlas over the Model Context Protocol. <a href="https://github.com/Siriapps/Cue">Source</a>.</li>
+      </ul>
+
+      <h2>Education</h2>
+      <ul>
+        <li>MS Computer Science, Indiana University Bloomington, 2025 to 2027.</li>
+        <li>BTech Computer Science, Indian Institute of Information Technology Pune, 2020 to 2024.</li>
+      </ul>
+
+      <h2>Elsewhere</h2>
+      <ul>
+        <li><a href="https://www.linkedin.com/in/nishant-chaudhary-9a250521a/">LinkedIn</a></li>
+        <li><a href="https://github.com/Nishant2306">GitHub</a></li>
+        <li><a href="mailto:nishantchaudhary0512@gmail.com">nishantchaudhary0512@gmail.com</a></li>
+      </ul>
+    </noscript>
     <div id="root"></div>
   </body>
 </html>

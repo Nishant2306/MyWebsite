@@ -193,7 +193,7 @@ async function sendEmail(v, env) {
     body: JSON.stringify({
       from: env.EMAIL_FROM || 'Portfolio <onboarding@resend.dev>',
       to: [env.EMAIL_TO],
-      subject: `Visitor #${v.visitNumber} — ${location(v)}`,
+      subject: `Visitor #${v.visitNumber} - ${location(v)}`,
       html: emailHtml(v),
     }),
   });

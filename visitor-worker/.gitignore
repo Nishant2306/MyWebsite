@@ -1,4 +1,4 @@
 node_modules
 .wrangler
-# Local secret overrides for `wrangler dev` — never commit.
+# Local secret overrides for `wrangler dev` - never commit.
 .dev.vars
