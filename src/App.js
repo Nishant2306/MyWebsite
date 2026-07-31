@@ -1459,8 +1459,8 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "AID      - assistive interface for deaf    (private)",
     ],
     experience: () => [
-      "2026–now   AI Developer Intern      ORIX (Remote)",
-      "2024–2025  Software Engineer        Nomura Holdings",
+      "2026-now   AI Developer Intern      ORIX (Remote)",
+      "2024-2025  Software Engineer        Nomura Holdings",
       "2024       Software Dev Intern      Nomura Holdings",
       "2023       Software Dev Intern      Tata Consultancy Services",
     ],
@@ -1472,8 +1472,8 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "infra       PostgreSQL, pgvector, Redis Stack, Neo4j, Prometheus, Grafana",
     ],
     education: () => [
-      "2025–2027  MS Computer Science   Indiana University (GPA 3.76/4.0)",
-      "2020–2024  B.Tech CSE            IIIT Pune (GPA 8.04/10)",
+      "2025-2027  MS Computer Science   Indiana University (GPA 3.76/4.0)",
+      "2020-2024  B.Tech CSE            IIIT Pune (GPA 8.04/10)",
     ],
     contact: () => [
       "email      nishantchaudhary0512@gmail.com",
@@ -2339,10 +2339,10 @@ export default function Portfolio() {
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="AI Developer Intern" company="ORIX"
-                  period="May 2026 – Present" location="Remote, USA"
+                  period="May 2026 - Present" location="Remote, USA"
                   tech="Azure AI Search · Document Intelligence · Databricks · Python · RAG · LLMs"
                   bullets={[
-                    "Architected an event-driven Azure ingestion pipeline handling 300–400 daily documents into an 85,000+ document knowledge base via AI Document Intelligence, MarkItDown, and semantic chunking.",
+                    "Architected an event-driven Azure ingestion pipeline handling 300-400 daily documents into an 85,000+ document knowledge base via AI Document Intelligence, MarkItDown, and semantic chunking.",
                     "Engineered a Retrieval-Augmented Generation (RAG) agent over that corpus with hybrid vector and keyword retrieval, reranking, and prompt orchestration, replacing manual search for the operations team.",
                     "Partnered with loan-portfolio analysts to deliver a natural-language analytics layer on Azure Databricks that compiles plain-English questions into SQL over millions of rows, taking query authoring from 10 minutes to under 20 seconds.",
                   ]}
@@ -2368,7 +2368,7 @@ export default function Portfolio() {
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="Software Engineer" company="Nomura Holdings"
-                  period="July 2024 – July 2025" location="Mumbai, India"
+                  period="July 2024 - July 2025" location="Mumbai, India"
                   tech="Java · Spring Boot · React.js · Node.js · Python · Neo4j · Docker · Kubernetes"
                   bullets={[
                     "Owned the Angular to React migration of a 40+ page enterprise portal, re-architecting state management and caching to cut page load time by 84% for 200+ daily users across global desks.",
@@ -2398,7 +2398,7 @@ export default function Portfolio() {
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="Software Developer Intern" company="Nomura Holdings"
-                  period="January 2024 – June 2024" location="Mumbai, India"
+                  period="January 2024 - June 2024" location="Mumbai, India"
                   tech="Java · Pact Broker · CI/CD · React.js"
                   bullets={[
                     "Authored unit and integration suites for Java APIs and introduced Pact Broker contract testing across services, lifting coverage from 48% to 83% and catching breaking changes before release.",
@@ -2426,10 +2426,10 @@ export default function Portfolio() {
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="Software Developer Intern" company="Tata Consultancy Services"
-                  period="May 2023 – July 2023" location="Pune, India"
+                  period="May 2023 - July 2023" location="Pune, India"
                   tech="Python · PyTorch · OpenCV · FastAPI · React.js · Blender"
                   bullets={[
-                    "Trained a medical imaging pipeline over MRI/CT volumes spanning enhancement, segmentation, feature extraction, tumor localization, and stage classification, reaching 98.5% detection accuracy on lesions down to 2–3 mm.",
+                    "Trained a medical imaging pipeline over MRI/CT volumes spanning enhancement, segmentation, feature extraction, tumor localization, and stage classification, reaching 98.5% detection accuracy on lesions down to 2-3 mm.",
                     "Reconstructed the nasal cavity in Blender across 22 anatomical regions and served an AR/VR particle-trajectory simulator through FastAPI to a React interface in under 15 seconds, scoring drug deposition at predicted tumor sites 70% faster than the synchronous build.",
                   ]}
                 />
@@ -2509,7 +2509,7 @@ export default function Portfolio() {
                 fontSize: isMobile ? "20px" : "26px", fontWeight: 700, color: t.text,
                 margin: "0 0 24px 0", lineHeight: 1.3,
               }}>
-                Turned a 5–10 day manual process<br />
+                Turned a 5-10 day manual process<br />
                 into a <span style={{ color: t.accent }}>10-second automation</span>.
               </h3>
 
@@ -2537,7 +2537,7 @@ export default function Portfolio() {
                     fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
                     lineHeight: 1.8, margin: 0,
                   }}>
-                    For a full team's portfolio, this manual process would have taken 5–10 days of tedious, repetitive work.
+                    For a full team's portfolio, this manual process would have taken 5-10 days of tedious, repetitive work.
                   </p>
                 </div>
 
@@ -2553,14 +2553,14 @@ export default function Portfolio() {
                     fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
                     lineHeight: 1.8, margin: "0 0 16px 0",
                   }}>
-                    Instead of manually onboarding each project, I collaborated with the NCD2.0 pipeline team, learned the system inside-out, and built a full automation script from scratch. Users could onboard a single project via a simple form (5–7 dropdowns) or bulk-onboard via CSV, just fill it in and hit enter.
+                    Instead of manually onboarding each project, I collaborated with the NCD2.0 pipeline team, learned the system inside-out, and built a full automation script from scratch. Users could onboard a single project via a simple form (5-7 dropdowns) or bulk-onboard via CSV, just fill it in and hit enter.
                   </p>
                   <p style={{
                     fontFamily: "'Space Grotesk', sans-serif",
                     fontSize: isMobile ? "14px" : "15px", color: t.textSecondary,
                     lineHeight: 1.8, margin: 0,
                   }}>
-                    What took 5–10 days now happened in ~10 seconds per project. I came up with this idea entirely on my own, took 100% ownership of implementation, and every piece of feedback was overwhelmingly positive.
+                    What took 5-10 days now happened in ~10 seconds per project. I came up with this idea entirely on my own, took 100% ownership of implementation, and every piece of feedback was overwhelmingly positive.
                   </p>
                 </div>
               </div>
@@ -2576,8 +2576,8 @@ export default function Portfolio() {
                 border: `1px solid ${t.border}`,
               }}>
                 {[
-                  { icon: "clock", before: "5–10 days", after: "~10 seconds", label: "Per Project" },
-                  { icon: "brain", before: "Manual YAML", after: "Smart Form", label: "5–7 Fields" },
+                  { icon: "clock", before: "5-10 days", after: "~10 seconds", label: "Per Project" },
+                  { icon: "brain", before: "Manual YAML", after: "Smart Form", label: "5-7 Fields" },
                   { icon: "box", before: "One-by-one", after: "CSV Bulk", label: "Mass Onboard" },
                   { icon: "star", before: "Assigned task", after: "Self-initiated", label: "100% Ownership" },
                 ].map((m, i) => (
@@ -2635,7 +2635,7 @@ export default function Portfolio() {
             gap: "24px",
           }}>
             <FadeInSection delay={0.1}>
-              <ProjectCard title="Relay – LLM Cost Gateway"
+              <ProjectCard title="Relay - LLM Cost Gateway"
                 date="July 2026" link="https://github.com/Nishant2306/relay"
                 live="https://nishant2306.github.io/relay/"
                 tech="Python · FastAPI · Redis Stack · PostgreSQL · Prometheus · Docker" icon={(props) => <RocketIcon {...props} />} gradient={t.accent}
@@ -2646,7 +2646,7 @@ export default function Portfolio() {
               />
             </FadeInSection>
             <FadeInSection delay={0.2}>
-              <ProjectCard title="Argus – LLM Eval Platform"
+              <ProjectCard title="Argus - LLM Eval Platform"
                 date="May 2026" link="https://github.com/Nishant2306/argus"
                 live="https://nishant2306.github.io/argus/"
                 tech="Python · FastAPI · PostgreSQL · Streamlit · GitHub Actions · HDBSCAN" icon={(props) => <StarBadgeIcon {...props} />} gradient={t.accent2}
@@ -2657,7 +2657,7 @@ export default function Portfolio() {
               />
             </FadeInSection>
             <FadeInSection delay={0.1}>
-              <ProjectCard title="Cue – AI Workspace Agent"
+              <ProjectCard title="Cue - AI Workspace Agent"
                 date="February 2026" link="https://github.com/Siriapps/Cue"
                 tech="Gemini · React · MongoDB Atlas · Model Context Protocol" icon={(props) => <BrainIcon {...props} />} gradient={t.accent}
                 bullets={[
@@ -2687,7 +2687,7 @@ export default function Portfolio() {
               />
             </FadeInSection>
             <FadeInSection delay={0.2}>
-              <ProjectCard title="AID – Assistive Interface for the Deaf"
+              <ProjectCard title="AID - Assistive Interface for the Deaf"
                 date="January 2023"
                 tech="Flutter · TensorFlow · Firebase · Blender" icon={(props) => <HandSignIcon {...props} />} gradient="#00d4ff"
                 bullets={[
@@ -2772,7 +2772,7 @@ export default function Portfolio() {
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: "11px", color: t.accent,
                   letterSpacing: "2px", marginBottom: "8px",
-                }}>AUG 2025 – MAY 2027</div>
+                }}>AUG 2025 - MAY 2027</div>
                 <h3 style={{
                   fontFamily: "'Syne', sans-serif",
                   fontSize: isMobile ? "18px" : "20px", fontWeight: 700, color: t.text,
@@ -2798,7 +2798,7 @@ export default function Portfolio() {
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: "11px", color: t.accent2,
                   letterSpacing: "2px", marginBottom: "8px",
-                }}>AUG 2020 – MAY 2024</div>
+                }}>AUG 2020 - MAY 2024</div>
                 <h3 style={{
                   fontFamily: "'Syne', sans-serif",
                   fontSize: isMobile ? "18px" : "20px", fontWeight: 700, color: t.text,
