@@ -38,7 +38,7 @@ import {
 } from "react-icons/si";
 import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
 import { RocketIcon, ClockIcon, BrainIcon, BoxIcon, StarBadgeIcon, ChartIcon, GradCapIcon, HandSignIcon } from "./components/ThemedIcons";
-import resumePdf from "./Nishant_Niranjan_Singh_Chaudhary_Resume.pdf";
+import resumePdf from "./Nishant_Chaudhary_Resume.pdf";
 
 const ThemeContext = createContext();
 const useTheme = () => useContext(ThemeContext);
@@ -875,11 +875,15 @@ const TimelineCard = ({ role, company, period, location, bullets, tech }) => {
   );
 };
 
-const ProjectCard = ({ title, tech, bullets, icon, date, link }) => {
+const ProjectCard = ({ title, tech, bullets, icon, date, link, live }) => {
   const [hovered, setHovered] = useState(false);
   const { mode, motionOK } = useTheme();
   const t = themes[mode];
   const { isMobile } = useResponsive();
+
+  // With a live URL there are two destinations, so the card stops being one
+  // big link and offers a button each instead.
+  const splitLinks = Boolean(live && link);
 
   const cardStyle = {
     display: "flex",
@@ -891,7 +895,7 @@ const ProjectCard = ({ title, tech, bullets, icon, date, link }) => {
     transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
     transform: hovered && motionOK ? "translateY(-6px)" : "translateY(0)",
     boxShadow: hovered ? "0 24px 60px rgba(0,0,0,0.2)" : "none",
-    cursor: link ? "pointer" : "default",
+    cursor: link && !splitLinks ? "pointer" : "default",
     position: "relative",
     overflow: "hidden",
     minHeight: isMobile ? "260px" : "320px",
@@ -932,7 +936,59 @@ const ProjectCard = ({ title, tech, bullets, icon, date, link }) => {
           }}>{b}</p>
         ))}
       </div>
-      {link && (
+      {splitLinks ? (
+        <div style={{ display: "flex", gap: "10px", marginTop: "18px", flexWrap: "wrap" }}>
+          <a
+            href={live}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${title} live demo`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase",
+              padding: "8px 14px", borderRadius: "8px",
+              border: `1px solid ${t.accent}55`,
+              background: `${t.accent}12`,
+              color: t.accent,
+              textDecoration: "none",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = `${t.accent}22`; e.currentTarget.style.borderColor = t.accent; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = `${t.accent}12`; e.currentTarget.style.borderColor = `${t.accent}55`; }}
+          >
+            <span style={{
+              width: "6px", height: "6px", borderRadius: "50%",
+              background: t.accent,
+              boxShadow: `0 0 ${hovered ? 10 : 5}px ${t.accent}`,
+              animation: motionOK ? "pulse 2s ease-in-out infinite" : "none",
+              flexShrink: 0,
+            }} />
+            live demo ↗
+          </a>
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${title} repository on GitHub`}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "11px", letterSpacing: "1.5px", textTransform: "uppercase",
+              padding: "8px 14px", borderRadius: "8px",
+              border: `1px solid ${t.border}`,
+              background: t.surface,
+              color: t.textSecondary,
+              textDecoration: "none",
+              transition: "all 0.3s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = t.text; e.currentTarget.style.borderColor = t.borderHover; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = t.textSecondary; e.currentTarget.style.borderColor = t.border; }}
+          >
+            <FaGithub style={{ fontSize: "14px" }} /> repo
+          </a>
+        </div>
+      ) : link && (
         <div style={{
           display: "inline-flex", alignItems: "center", gap: "8px",
           marginTop: "16px",
@@ -967,7 +1023,7 @@ const ProjectCard = ({ title, tech, bullets, icon, date, link }) => {
     onBlur: () => setHovered(false),
   };
 
-  return link ? (
+  return link && !splitLinks ? (
     <a href={link} target="_blank" rel="noopener noreferrer" aria-label={`${title} repository on GitHub`} style={cardStyle} {...events}>
       {inner}
     </a>
@@ -1057,17 +1113,33 @@ const MobileMenuButton = ({ open, onClick }) => {
   );
 };
 
-const Kbd = ({ children }) => {
+const Kbd = ({ children, onClick, title }) => {
   const { mode } = useTheme();
   const t = themes[mode];
+  const [hovered, setHovered] = useState(false);
+
+  const style = {
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "10px",
+    color: onClick && hovered ? t.accent : t.textSecondary,
+    padding: "2px 6px", borderRadius: "4px",
+    border: `1px solid ${onClick && hovered ? `${t.accent}70` : t.border}`,
+    background: t.surface,
+    transition: "color 0.2s, border-color 0.2s",
+  };
+
+  if (!onClick) return <span style={style}>{children}</span>;
+
   return (
-    <span style={{
-      fontFamily: "'JetBrains Mono', monospace",
-      fontSize: "10px", color: t.textSecondary,
-      padding: "2px 6px", borderRadius: "4px",
-      border: `1px solid ${t.border}`,
-      background: t.surface,
-    }}>{children}</span>
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-label={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ ...style, cursor: "pointer", lineHeight: 1.6 }}
+    >{children}</button>
   );
 };
 
@@ -1172,7 +1244,7 @@ const CommandPalette = ({ open, onClose, actions }) => {
               caretColor: t.accent,
             }}
           />
-          <Kbd>esc</Kbd>
+          <Kbd onClick={onClose} title="Close command palette">esc</Kbd>
         </div>
         <div ref={listRef} style={{ maxHeight: "320px", overflowY: "auto", padding: "8px" }}>
           {filtered.length === 0 && (
@@ -1376,31 +1448,31 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
     about: () => [
       "I build systems that make people more capable.",
       "Currently: RAG pipelines over 85K+ documents at ORIX.",
-      "Previously: Software Analyst at Nomura, AR/VR at Tata Research.",
+      "Previously: Software Engineer at Nomura, medical imaging + AR/VR at TCS.",
     ],
     projects: () => [
-      "Relay    - cost-optimizing LLM gateway     github.com/Nishant2306/relay",
-      "Argus    - LLM eval & observability        github.com/Nishant2306/argus",
-      "Cue      - intent-aware workspace agent    github.com/Siriapps/Cue",
+      "Relay    - LLM cost gateway                nishant2306.github.io/relay",
+      "Argus    - LLM eval platform               nishant2306.github.io/argus",
+      "Cue      - AI workspace agent              github.com/Siriapps/Cue",
       "DIVDASH  - D&I analytics dashboard         github.com/Nishant2306/DiveDash",
       "DISHA    - student-mentor platform         github.com/satty26/disha",
       "AID      - assistive interface for deaf    (private)",
     ],
     experience: () => [
       "2026–now   AI Developer Intern      ORIX (Remote)",
-      "2024–2025  Software Analyst         Nomura Holdings",
+      "2024–2025  Software Engineer        Nomura Holdings",
       "2024       Software Dev Intern      Nomura Holdings",
-      "2023       AR/VR Developer          Tata Research (TRDDC)",
+      "2023       Software Dev Intern      Tata Consultancy Services",
     ],
     skills: () => [
-      "languages   Java, Python, JavaScript/TypeScript, SQL, Dart, Scala",
-      "frameworks  Spring Boot, React, Node.js, FastAPI, Flutter",
-      "cloud       Azure (AI, Databricks), AWS (Bedrock, SageMaker), GCP",
-      "ai/ml       RAG, LLM evaluation, prompt engineering, vector search",
-      "infra       Docker, Kubernetes, PostgreSQL, Redis, Prometheus, Grafana",
+      "languages   Python, Java, C++, TypeScript, JavaScript, SQL, Scala",
+      "frameworks  Spring Boot, FastAPI, React, Node.js, Angular, Flutter, Flask",
+      "cloud       Azure (AI, Databricks), GCP, Docker, Kubernetes, CI/CD",
+      "ai/ml       RAG, vector search, LLM evaluation, HDBSCAN, PyTorch, CrewAI",
+      "infra       PostgreSQL, pgvector, Redis Stack, Neo4j, Prometheus, Grafana",
     ],
     education: () => [
-      "2025–2027  MS Computer Science   Indiana University Bloomington",
+      "2025–2027  MS Computer Science   Indiana University (GPA 3.76/4.0)",
       "2020–2024  B.Tech CSE            IIIT Pune (GPA 8.04/10)",
     ],
     contact: () => [
@@ -1697,6 +1769,7 @@ export default function Portfolio() {
       skills: [
         { name: "Java / Spring Boot", color: "#00ffc8" },
         { name: "Python", color: "#7850ff" },
+        { name: "C++", color: "#00599c" },
         { name: "FastAPI", color: "#009688" },
         { name: "JavaScript", color: "#FFD700" },
         { name: "React.js", color: "#00d4ff" },
@@ -1718,11 +1791,13 @@ export default function Portfolio() {
         { name: "Google Cloud Platform", color: "#4285f4" },
         { name: "Microsoft Azure", color: "#00bcf2" },
         { name: "Azure Databricks", color: "#FF3621" },
-        { name: "PostgreSQL", color: "#4169E1" },
-        { name: "Redis Stack", color: "#DC382D" },
+        { name: "PostgreSQL / pgvector", color: "#4169E1" },
+        { name: "Redis Stack / RedisVL", color: "#DC382D" },
         { name: "Docker", color: "#00d4ff" },
         { name: "Kubernetes", color: "#326ce5" },
+        { name: "PyTorch", color: "#ee4c2c" },
         { name: "TensorFlow", color: "#ff6f00" },
+        { name: "HDBSCAN", color: "#4285f4" },
         { name: "Firebase", color: "#FFD700" },
         { name: "Neo4j", color: "#00ffc8" },
         { name: "MongoDB", color: "#47A248" },
@@ -1738,6 +1813,8 @@ export default function Portfolio() {
       skills: [
         { name: "Git", color: "#f05032" },
         { name: "CI/CD (Jenkins, GitLab, GitHub Actions)", color: "#00ffc8" },
+        { name: "Ansible", color: "#ee0000" },
+        { name: "Distributed Systems", color: "#00d4ff" },
         { name: "Pact Broker", color: "#7850ff" },
         { name: "Machine Learning", color: "#FFD700" },
         { name: "LLM Evaluation", color: "#FFD700" },
@@ -1760,6 +1837,7 @@ export default function Portfolio() {
   const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
 
   const paletteActions = [
+    { id: "terminal", label: "Open Terminal", hint: "` key", icon: <FaTerminal />, perform: () => setTerminalOpen(true) },
     ...navItems.map(s => ({
       id: `goto-${s.toLowerCase()}`,
       label: `Go to ${s}`,
@@ -1771,7 +1849,6 @@ export default function Portfolio() {
     { id: "linkedin", label: "Open LinkedIn", hint: "link", icon: <FaLinkedinIn />, perform: () => window.open(LINKEDIN_URL, "_blank", "noopener") },
     { id: "resume", label: "Open Resume", hint: "pdf", icon: <FaFileAlt />, perform: () => window.open(resumePdf, "_blank", "noopener") },
     { id: "email", label: "Send an Email", hint: "contact", icon: <FaEnvelope />, perform: () => { window.location.href = "mailto:nishantchaudhary0512@gmail.com"; } },
-    { id: "terminal", label: "Open Terminal", hint: "` key", icon: <FaTerminal />, perform: () => setTerminalOpen(true) },
     { id: "motion", label: motionOK ? "Pause Animations" : "Play Animations", hint: "accessibility", icon: motionOK ? <FaPause /> : <FaPlay />, perform: toggleMotion },
     // { id: "theme", label: mode === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme", hint: "theme", icon: "◐", perform: toggle },
   ];
@@ -1794,6 +1871,10 @@ export default function Portfolio() {
           @keyframes gridShift { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
           @keyframes rocketPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
           @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes ctrlKBreathe {
+            0%, 100% { box-shadow: 0 0 0 0 ${t.accent}00; border-color: ${t.border}; color: ${t.textSecondary}; }
+            50% { box-shadow: 0 0 14px 1px ${t.accent}38; border-color: ${t.accent}70; color: ${t.accent}; }
+          }
           ::selection { background: ${t.selection}; color: ${t.text}; }
           * { scrollbar-width: thin; scrollbar-color: ${t.accent}50 ${t.bg}; box-sizing: border-box; }
           *::-webkit-scrollbar { width: 8px; }
@@ -1924,9 +2005,21 @@ export default function Portfolio() {
                   cursor: "pointer",
                   transition: "all 0.3s",
                   display: "inline-flex", alignItems: "center", gap: "6px",
+                  // Draws a slow, low-key eye toward the palette shortcut.
+                  animation: motionOK ? "ctrlKBreathe 3.6s ease-in-out infinite" : "none",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = t.accent; e.currentTarget.style.borderColor = `${t.accent}60`; }}
-                onMouseLeave={e => { e.currentTarget.style.color = t.textSecondary; e.currentTarget.style.borderColor = t.border; }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.animation = "none";
+                  e.currentTarget.style.color = t.accent;
+                  e.currentTarget.style.borderColor = `${t.accent}60`;
+                  e.currentTarget.style.boxShadow = `0 0 14px 1px ${t.accent}38`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = t.textSecondary;
+                  e.currentTarget.style.borderColor = t.border;
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.animation = motionOK ? "ctrlKBreathe 3.6s ease-in-out infinite" : "none";
+                }}
               >CTRL K</button>
             </div>
           )}
@@ -2026,7 +2119,7 @@ export default function Portfolio() {
                   "Full-Stack Software Engineer",
                   "Cloud & AI Enthusiast",
                   "MS CS @ Indiana University",
-                  "Former Analyst @ Nomura",
+                  "Former Software Engineer @ Nomura",
                   "AR/VR Developer",
                 ]} />
               </div>
@@ -2179,7 +2272,7 @@ export default function Portfolio() {
                   borderLeft: `2px solid ${t.accent}`,
                   paddingLeft: isMobile ? "16px" : "24px",
                 }}>
-                  I've always been drawn to problems where technology can remove friction and help people do their best work. That curiosity has shaped every stage of my journey, from building AR/VR tools for surgical planning at <span style={{ color: t.accent }}>Tata Research</span>, to modernizing enterprise platforms at <span style={{ color: t.accent }}>Nomura</span>, and now designing AI systems at <span style={{ color: t.accent }}>ORIX</span> that turn hundreds of daily documents into searchable knowledge and natural-language workflows.
+                  I've always been drawn to problems where technology can remove friction and help people do their best work. That curiosity has shaped every stage of my journey, from building medical imaging and AR/VR tools for surgical planning at <span style={{ color: t.accent }}>Tata Consultancy Services</span>, to modernizing enterprise platforms at <span style={{ color: t.accent }}>Nomura</span>, and now designing AI systems at <span style={{ color: t.accent }}>ORIX</span> that turn hundreds of daily documents into searchable knowledge and natural-language workflows.
                 </p>
                 <p style={{
                   fontFamily: "'Space Grotesk', sans-serif",
@@ -2247,11 +2340,11 @@ export default function Portfolio() {
                 <TimelineCard
                   role="AI Developer Intern" company="ORIX"
                   period="May 2026 – Present" location="Remote, USA"
-                  tech="Azure AI · Document Intelligence · AI Search · Databricks · Python · RAG · LLMs"
+                  tech="Azure AI Search · Document Intelligence · Databricks · Python · RAG · LLMs"
                   bullets={[
-                    "Architected an event-driven Azure document-ingestion pipeline processing 300–400 daily documents into an 85,000+ document knowledge base using AI Document Intelligence, semantic chunking, and Azure AI Search.",
-                    "Engineered a Retrieval-Augmented Generation (RAG) agent with hybrid vector + keyword search, reranking, and prompt orchestration, reducing manual document-discovery workflows by 70%.",
-                    "Built a natural-language analytics workflow on Azure Databricks over millions of loan-portfolio rows, turning plain-English questions into generated SQL and cutting query creation time from 10 minutes to 15–20 seconds.",
+                    "Architected an event-driven Azure ingestion pipeline handling 300–400 daily documents into an 85,000+ document knowledge base via AI Document Intelligence, MarkItDown, and semantic chunking.",
+                    "Engineered a Retrieval-Augmented Generation (RAG) agent over that corpus with hybrid vector and keyword retrieval, reranking, and prompt orchestration, replacing manual search for the operations team.",
+                    "Partnered with loan-portfolio analysts to deliver a natural-language analytics layer on Azure Databricks that compiles plain-English questions into SQL over millions of rows, taking query authoring from 10 minutes to under 20 seconds.",
                   ]}
                 />
                 {isDesktop && motionOK && (
@@ -2274,15 +2367,14 @@ export default function Portfolio() {
             <FadeInSection delay={0.2}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
-                  role="Software Analyst" company="Nomura Holdings"
+                  role="Software Engineer" company="Nomura Holdings"
                   period="July 2024 – July 2025" location="Mumbai, India"
-                  tech="React.js · Node.js · Python · Java (Spring Boot) · Neo4j · Docker · Kubernetes"
+                  tech="Java · Spring Boot · React.js · Node.js · Python · Neo4j · Docker · Kubernetes"
                   bullets={[
-                    "Migrated a 40+ page enterprise portal from Angular to React, redesigning the UI and implementing caching to reduce load time by 84% for 200+ users.",
-                    "Developed Java Spring Boot microservices and RESTful APIs for Nomura's NCD Pipeline with CI/CD integration.",
-                    "Engineered an auto-onboarding API that cut setup time from 2–3 weeks to 5 minutes, saving 100+ engineering hours per team.",
-                    "Integrated an AI assistant and Neo4j graph database visualizations for 100+ applications for cross-domain insights.",
-                    "Optimized large-scale data processing, reduced API latency by 20%, and built a Python–Neo4j graph analysis tool.",
+                    "Owned the Angular to React migration of a 40+ page enterprise portal, re-architecting state management and caching to cut page load time by 84% for 200+ daily users across global desks.",
+                    "Built Java Spring Boot microservices and REST APIs for Nomura's internal developer platform, delivering an auto-onboarding service that reduced application setup from 3 weeks to 5 minutes, saving 100+ engineering hours per team.",
+                    "Modeled 100+ production applications and their dependencies as a Neo4j graph, then optimized graph traversal and Python batch processing to reduce API latency by 20% at enterprise scale.",
+                    "Launched an AI assistant over the graph alongside a rebuilt admin console with usage analytics and monitoring, giving platform owners self-serve visibility across the application estate.",
                   ]}
                 />
                 {isDesktop && motionOK && (
@@ -2309,9 +2401,8 @@ export default function Portfolio() {
                   period="January 2024 – June 2024" location="Mumbai, India"
                   tech="Java · Pact Broker · CI/CD · React.js"
                   bullets={[
-                    "Authored unit and integration tests for Java APIs, implementing Pact Broker for contract testing, boosting coverage from 48% to 83%.",
-                    "Onboarded 10+ internal applications to the NCD2.0 CI/CD pipeline, reducing setup time from 2–3 days to under 1 hour.",
-                    "Redesigned the portal UI with 20+ reusable components, reducing insight extraction time by 30% for 1,000+ users.",
+                    "Authored unit and integration suites for Java APIs and introduced Pact Broker contract testing across services, lifting coverage from 48% to 83% and catching breaking changes before release.",
+                    "Rebuilt the portal as 20+ reusable components, adopted as the shared design layer by teams serving 1,000+ users.",
                   ]}
                 />
                 {isDesktop && motionOK && (
@@ -2334,12 +2425,12 @@ export default function Portfolio() {
             <FadeInSection delay={0.4}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
-                  role="AR/VR Developer" company="Tata Research Development and Design Centre"
+                  role="Software Developer Intern" company="Tata Consultancy Services"
                   period="May 2023 – July 2023" location="Pune, India"
-                  tech="Blender · ReactJS · AR/VR · 3D Modeling"
+                  tech="Python · PyTorch · OpenCV · FastAPI · React.js · Blender"
                   bullets={[
-                    "Modeled a high-fidelity 3D human nasal cavity using Blender and medical imaging for surgical planning.",
-                    "Transformed the 3D model into an immersive AR/VR experience embedded in a ReactJS web platform for interactive surgical exploration.",
+                    "Trained a medical imaging pipeline over MRI/CT volumes spanning enhancement, segmentation, feature extraction, tumor localization, and stage classification, reaching 98.5% detection accuracy on lesions down to 2–3 mm.",
+                    "Reconstructed the nasal cavity in Blender across 22 anatomical regions and served an AR/VR particle-trajectory simulator through FastAPI to a React interface in under 15 seconds, scoring drug deposition at predicted tumor sites 70% faster than the synchronous build.",
                   ]}
                 />
                 {isDesktop && motionOK && (
@@ -2544,32 +2635,34 @@ export default function Portfolio() {
             gap: "24px",
           }}>
             <FadeInSection delay={0.1}>
-              <ProjectCard title="Relay – Cost-Optimizing LLM Gateway"
+              <ProjectCard title="Relay – LLM Cost Gateway"
                 date="July 2026" link="https://github.com/Nishant2306/relay"
-                tech="Python · FastAPI · Redis Stack · PostgreSQL · Prometheus · Grafana · Docker" icon={(props) => <RocketIcon {...props} />} gradient={t.accent}
+                live="https://nishant2306.github.io/relay/"
+                tech="Python · FastAPI · Redis Stack · PostgreSQL · Prometheus · Docker" icon={(props) => <RocketIcon {...props} />} gradient={t.accent}
                 bullets={[
-                  "OpenAI-compatible LLM gateway with semantic caching via local embeddings (95% hit rate) and complexity-based model routing, cutting simulated API spend 91% over 67k-request load tests.",
-                  "Lua token-bucket rate limiting, per-team budgets, and circuit-breaker failover, sustaining zero dropped requests in provider-outage drills at 3.6 ms p50 overhead, monitored via Prometheus/Grafana.",
+                  "OpenAI-compatible LLM gateway with local-embedding semantic caching (95% hit rate, 2.5% false hits on an 80-pair holdout) and complexity-based model routing, cutting simulated API spend 91% over 67k-request load tests.",
+                  "Lua token-bucket rate limiting, per-team budgets, and circuit-breaker failover that held zero dropped requests through provider-outage drills at 3.6 ms p50 overhead, tracked in Prometheus and Grafana.",
                 ]}
               />
             </FadeInSection>
             <FadeInSection delay={0.2}>
-              <ProjectCard title="Argus – LLM Evaluation & Observability Platform"
+              <ProjectCard title="Argus – LLM Eval Platform"
                 date="May 2026" link="https://github.com/Nishant2306/argus"
-                tech="Python · FastAPI · PostgreSQL · Streamlit · GitHub Actions" icon={(props) => <StarBadgeIcon {...props} />} gradient={t.accent2}
+                live="https://nishant2306.github.io/argus/"
+                tech="Python · FastAPI · PostgreSQL · Streamlit · GitHub Actions · HDBSCAN" icon={(props) => <StarBadgeIcon {...props} />} gradient={t.accent2}
                 bullets={[
-                  "Self-improving LLM evaluation platform tracing multi-step pipelines end to end, auto-mining production traces into eval datasets via HDBSCAN + LLM labeling at 92% verified precision.",
-                  "80-case adversarial benchmark with a six-flag safety auto-fail judge and a CI gate with paired McNemar tests that caught 100% of injected prompt regressions pre-merge, plus prompt versioning with rollback and A/B experiments.",
+                  "End-to-end tracing for multi-step LLM chains, auto-mining production traces into eval datasets via HDBSCAN clustering plus LLM labeling, adding 143 cases at 92% verified precision.",
+                  "80-case adversarial benchmark with a six-flag safety judge and a paired McNemar CI gate that flagged every injected prompt regression before merge, backed by a root-cause analyzer at 81% step-identification accuracy.",
                 ]}
               />
             </FadeInSection>
             <FadeInSection delay={0.1}>
-              <ProjectCard title="Cue – Intent-Aware AI Workspace Agent"
+              <ProjectCard title="Cue – AI Workspace Agent"
                 date="February 2026" link="https://github.com/Siriapps/Cue"
-                tech="Gemini · React · MongoDB Atlas · MCP" icon={(props) => <BrainIcon {...props} />} gradient={t.accent}
+                tech="Gemini · React · MongoDB Atlas · Model Context Protocol" icon={(props) => <BrainIcon {...props} />} gradient={t.accent}
                 bullets={[
-                  "Predictive Chrome extension using Gemini and MongoDB Atlas that forecasts the user's next five tasks from browsing history.",
-                  "Leverages Model Context Protocol for autonomous execution across 9+ Google Workspace tools with multimodal meeting summaries.",
+                  "Chrome extension pairing Gemini with MongoDB Atlas to forecast a user's next five tasks from browsing history, surfaced through a real-time React dashboard.",
+                  "Model Context Protocol (MCP) integration orchestrating actions across 9+ Google Workspace tools, plus a multimodal scribe producing meeting summaries and highlight reels.",
                 ]}
               />
             </FadeInSection>
@@ -2688,7 +2781,7 @@ export default function Portfolio() {
                 <div style={{
                   fontFamily: "'Space Grotesk', sans-serif",
                   fontSize: isMobile ? "13px" : "14px", color: t.textSecondary,
-                }}>Master of Science, Computer Science</div>
+                }}>Master of Science, Computer Science · GPA: 3.76/4.0</div>
                 <div style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: "11px", color: t.textMuted, marginTop: "4px",
@@ -2705,7 +2798,7 @@ export default function Portfolio() {
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: "11px", color: t.accent2,
                   letterSpacing: "2px", marginBottom: "8px",
-                }}>DEC 2020 – JUN 2024</div>
+                }}>AUG 2020 – MAY 2024</div>
                 <h3 style={{
                   fontFamily: "'Syne', sans-serif",
                   fontSize: isMobile ? "18px" : "20px", fontWeight: 700, color: t.text,
