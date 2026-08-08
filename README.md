@@ -176,7 +176,7 @@ cd visitor-worker && npx wrangler deploy
 
 **Nishant Chaudhary** - MS Computer Science, Indiana University Bloomington
 
-[Website](https://nishcodes.com) · [LinkedIn](https://www.linkedin.com/in/nishant-chaudhary-9a250521a/) · [GitHub](https://github.com/Nishant2306) · nishantchaudhary0512@gmail.com
+[Website](https://nishcodes.com) · [LinkedIn](https://www.linkedin.com/in/nishant-nishcodes/) · [GitHub](https://github.com/Nishant2306) · nishantchaudhary0512@gmail.com
 
 <sub>MIT licensed. Content and résumé are mine - the code is yours to learn from.</sub>
 

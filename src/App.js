@@ -38,7 +38,9 @@ import {
 } from "react-icons/si";
 import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
 import { RocketIcon, ClockIcon, BrainIcon, BoxIcon, StarBadgeIcon, ChartIcon, GradCapIcon, HandSignIcon } from "./components/ThemedIcons";
-import resumePdf from "./Nishant_Chaudhary_Resume.pdf";
+// Served straight out of public/ so the URL stays stable across rebuilds -
+// a webpack-hashed import changes path every time the bundle is rebuilt.
+const RESUME_URL = "/resume.pdf";
 
 const ThemeContext = createContext();
 const useTheme = () => useContext(ThemeContext);
@@ -1731,10 +1733,10 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
     contact: () => [
       "email      nishantchaudhary0512@gmail.com",
       "phone      +1 (930) 904-4657",
-      "linkedin   linkedin.com/in/nishant-chaudhary-9a250521a",
+      "linkedin   linkedin.com/in/nishant-nishcodes",
     ],
     resume: () => {
-      window.open(resumePdf, "_blank", "noopener");
+      window.open(RESUME_URL, "_blank", "noopener");
       return ["opening resume..."];
     },
     github: () => {
@@ -1742,7 +1744,7 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       return ["opening github..."];
     },
     linkedin: () => {
-      window.open("https://www.linkedin.com/in/nishant-chaudhary-9a250521a/", "_blank", "noopener");
+      window.open("https://www.linkedin.com/in/nishant-nishcodes/", "_blank", "noopener");
       return ["opening linkedin..."];
     },
     theme: () => {
@@ -2084,7 +2086,7 @@ export default function Portfolio() {
     },
   ];
 
-  const LINKEDIN_URL = "https://www.linkedin.com/in/nishant-chaudhary-9a250521a/";
+  const LINKEDIN_URL = "https://www.linkedin.com/in/nishant-nishcodes/";
   const GITHUB_URL = "https://github.com/Nishant2306";
 
   const navItems = ['About', 'Experience', 'Achievement', 'Projects', 'Skills', 'Education', 'Contact'];
@@ -2100,7 +2102,7 @@ export default function Portfolio() {
     })),
     { id: "github", label: "Open GitHub", hint: "link", icon: <FaGithub />, perform: () => window.open(GITHUB_URL, "_blank", "noopener") },
     { id: "linkedin", label: "Open LinkedIn", hint: "link", icon: <FaLinkedinIn />, perform: () => window.open(LINKEDIN_URL, "_blank", "noopener") },
-    { id: "resume", label: "Open Resume", hint: "pdf", icon: <FaFileAlt />, perform: () => window.open(resumePdf, "_blank", "noopener") },
+    { id: "resume", label: "Open Resume", hint: "pdf", icon: <FaFileAlt />, perform: () => window.open(RESUME_URL, "_blank", "noopener") },
     { id: "email", label: "Send an Email", hint: "contact", icon: <FaEnvelope />, perform: () => { window.location.href = "mailto:nishantchaudhary0512@gmail.com"; } },
     { id: "motion", label: motionOK ? "Pause Animations" : "Play Animations", hint: "accessibility", icon: motionOK ? <FaPause /> : <FaPlay />, perform: toggleMotion },
     // { id: "theme", label: mode === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme", hint: "theme", icon: "◐", perform: toggle },
@@ -2415,7 +2417,7 @@ export default function Portfolio() {
                 display: "inline-flex", alignItems: "center", gap: "8px",
               }}><FaLinkedinIn style={{ fontSize: "14px" }} /> LinkedIn ↗</a>
               <a
-                href={resumePdf}
+                href={RESUME_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 
@@ -3154,7 +3156,7 @@ export default function Portfolio() {
                   display: "inline-flex", alignItems: "center", gap: "8px",
                 }}><FaGithub style={{ fontSize: "14px" }} /> GitHub ↗</a>
                 <a
-                  href={resumePdf}
+                  href={RESUME_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   
@@ -3215,7 +3217,7 @@ export default function Portfolio() {
                     display: "inline-flex", alignItems: "center", gap: "8px",
                   }}><FaGithub style={{ fontSize: "14px" }} /> GitHub ↗</a>
                   <a
-                    href={resumePdf}
+                    href={RESUME_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     
