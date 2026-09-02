@@ -660,6 +660,7 @@ const SkillOrb = ({ name, color, isMobile }) => {
     if (key.includes("aws")) return FaAmazon;
     if (key.includes("google cloud")) return SiGooglecloud;
     if (key.includes("microsoft azure") || key === "azure") return FaMicrosoft;
+    if (key.startsWith("azure") || key.includes("power bi")) return FaMicrosoft;
     if (key.includes("docker")) return SiDocker;
     if (key.includes("kubernetes")) return SiKubernetes;
     if (key.includes("tensorflow")) return SiTensorflow;
@@ -1699,10 +1700,13 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "  clear         clear the terminal",
       "  exit          close the terminal",
     ],
-    whoami: () => ["Nishant Chaudhary - AI Developer @ ORIX, MS CS @ Indiana University."],
+    whoami: () => ["Nishant Chaudhary - Forward Deployed AI Engineer Intern @ ORIX, MS CS @ Indiana University."],
     about: () => [
       "I build systems that make people more capable.",
-      "Currently: RAG pipelines over 85K+ documents at ORIX.",
+      "Currently: forward deployed at ORIX - I sit with operations, lending, and",
+      "           loan portfolio teams, then ship the AI products they asked for:",
+      "           document intelligence over an 85K+ doc knowledge base, a RAG",
+      "           agent, and natural-language analytics over millions of rows.",
       "Previously: Software Engineer at Nomura, medical imaging + AR/VR at TCS.",
     ],
     projects: () => [
@@ -1714,15 +1718,16 @@ const Terminal = ({ open, onClose, scrollTo, toggleTheme, toggleMotion }) => {
       "AID      - assistive interface for deaf    (private)",
     ],
     experience: () => [
-      "2026-now   AI Developer Intern      ORIX (Remote)",
-      "2024-2025  Software Engineer        Nomura Holdings",
-      "2024       Software Dev Intern      Nomura Holdings",
-      "2023       Software Dev Intern      Tata Consultancy Services",
+      "2026-now   Forward Deployed AI Engineer Intern   ORIX (Remote)",
+      "2024-2025  Software Engineer                     Nomura Holdings",
+      "2024       Software Dev Intern                   Nomura Holdings",
+      "2023       Software Dev Intern                   Tata Consultancy Services",
     ],
     skills: () => [
       "languages   Python, Java, C++, TypeScript, JavaScript, SQL, Scala",
       "frameworks  Spring Boot, FastAPI, React, Node.js, Angular, Flutter, Flask",
-      "cloud       Azure (AI, Databricks), GCP, Docker, Kubernetes, CI/CD",
+      "cloud       Azure (AI Search, Document Intelligence, Logic Apps, Functions,",
+      "            Databricks, Genie), GCP, Docker, Kubernetes, CI/CD",
       "ai/ml       RAG, vector search, LLM evaluation, HDBSCAN, PyTorch, CrewAI",
       "infra       PostgreSQL, pgvector, Redis Stack, Neo4j, Prometheus, Grafana",
     ],
@@ -2045,7 +2050,14 @@ export default function Portfolio() {
         { name: "AWS (Bedrock, SageMaker, Lambda, EC2, S3)", color: "#FF9900" },
         { name: "Google Cloud Platform", color: "#4285f4" },
         { name: "Microsoft Azure", color: "#00bcf2" },
+        { name: "Azure AI Search", color: "#00bcf2" },
+        { name: "Azure AI Document Intelligence", color: "#0078d4" },
+        { name: "Azure Logic Apps", color: "#0078d4" },
+        { name: "Azure Functions", color: "#FFD700" },
         { name: "Azure Databricks", color: "#FF3621" },
+        { name: "Databricks Genie", color: "#FF3621" },
+        { name: "Azure Data Factory", color: "#00bcf2" },
+        { name: "Power BI", color: "#F2C811" },
         { name: "PostgreSQL / pgvector", color: "#4169E1" },
         { name: "Redis Stack / RedisVL", color: "#DC382D" },
         { name: "Docker", color: "#00d4ff" },
@@ -2376,7 +2388,7 @@ export default function Portfolio() {
                 minHeight: isMobile ? "28px" : "32px",
               }}>
                 <TypeWriter texts={[
-                  "AI Developer Intern @ ORIX",
+                  "Forward Deployed AI Engineer Intern @ ORIX",
                   "Full-Stack Software Engineer",
                   "Cloud & AI Enthusiast",
                   "MS CS @ Indiana University",
@@ -2535,7 +2547,7 @@ export default function Portfolio() {
                   borderLeft: `2px solid ${t.accent}`,
                   paddingLeft: isMobile ? "16px" : "24px",
                 }}>
-                  I've always been drawn to problems where technology can remove friction and help people do their best work. That curiosity has shaped every stage of my journey, from building medical imaging and AR/VR tools for surgical planning at <span style={{ color: t.accent }}>Tata Consultancy Services</span>, to modernizing enterprise platforms at <span style={{ color: t.accent }}>Nomura</span>, and now designing AI systems at <span style={{ color: t.accent }}>ORIX</span> that turn hundreds of daily documents into searchable knowledge and natural-language workflows.
+                  I've always been drawn to problems where technology can remove friction and help people do their best work. That curiosity has shaped every stage of my journey, from building medical imaging and AR/VR tools for surgical planning at <span style={{ color: t.accent }}>Tata Consultancy Services</span>, to modernizing enterprise platforms at <span style={{ color: t.accent }}>Nomura</span>, and now working as a <span style={{ color: t.accent }}>Forward Deployed AI Engineer Intern at ORIX</span>. At ORIX, I partner directly with business teams to understand their workflows and turn their requirements into AI products through rapid prototypes, demos, feedback, iteration, and final delivery. My work spans document intelligence, Retrieval-Augmented Generation, natural-language analytics, and the cloud and data workflows that make those products dependable.
                 </p>
                 <p style={{
                   fontFamily: "'Space Grotesk', sans-serif",
@@ -2601,13 +2613,15 @@ export default function Portfolio() {
             <FadeInSection delay={0.1}>
               <div style={{ position: "relative" }}>
                 <TimelineCard
-                  role="AI Developer Intern" company="ORIX"
+                  role="Forward Deployed AI Engineer Intern" company="ORIX"
                   period="May 2026 - Present" location="Remote, USA"
-                  tech="Azure AI Search · Document Intelligence · Databricks · Python · RAG · LLMs"
+                  tech="Azure AI Search · Azure AI Document Intelligence · Azure Logic Apps · Azure Functions · Azure Databricks · Databricks Genie · Python · SQL · RAG · LLMs"
                   bullets={[
-                    "Architected an event-driven Azure ingestion pipeline handling 300-400 daily documents into an 85,000+ document knowledge base via AI Document Intelligence, MarkItDown, and semantic chunking.",
-                    "Engineered a Retrieval-Augmented Generation (RAG) agent over that corpus with hybrid vector and keyword retrieval, reranking, and prompt orchestration, replacing manual search for the operations team.",
-                    "Partnered with loan-portfolio analysts to deliver a natural-language analytics layer on Azure Databricks that compiles plain-English questions into SQL over millions of rows, taking query authoring from 10 minutes to under 20 seconds.",
+                    "Partnered directly with operations, lending, and loan portfolio teams to understand business workflows, gather requirements, define edge cases, and own each AI product from discovery and architecture through demos, testing, feedback, and final delivery.",
+                    "Architected and shipped an event-driven Azure document intelligence platform processing 300-400 documents daily into an 85,000+ document knowledge base using Logic Apps, Functions, AI Document Intelligence, Blob Storage, MarkItDown, semantic chunking, metadata enrichment, and Azure AI Search.",
+                    "Designed and iteratively refined a Retrieval-Augmented Generation agent with business users using hybrid vector and keyword retrieval, reranking, prompt orchestration, and source-grounded responses, replacing manual document search for operations teams.",
+                    "Built and delivered a natural-language analytics layer with Azure Databricks and Databricks Genie that translates plain-English questions into SQL over millions of loan portfolio rows, reducing query authoring time from 10 minutes to under 20 seconds and returning self-service answers and visualizations.",
+                    "Completed the supporting workflows required for reliable delivery, including scheduled Databricks refreshes, usage and billing datasets, Power BI-ready views, dashboards, governed access, SharePoint and Azure Data Factory pipelines, index maintenance, environment migrations, model upgrades, and production fixes.",
                   ]}
                 />
                 {isDesktop && motionOK && (
