@@ -38,9 +38,12 @@ import {
 } from "react-icons/si";
 import { FaBrain, FaUsersCog, FaVrCardboard, FaCubes } from "react-icons/fa";
 import { RocketIcon, ClockIcon, BrainIcon, BoxIcon, StarBadgeIcon, ChartIcon, GradCapIcon, HandSignIcon } from "./components/ThemedIcons";
-// Served straight out of public/ so the URL stays stable across rebuilds -
-// a webpack-hashed import changes path every time the bundle is rebuilt.
-const RESUME_URL = "/resume.pdf";
+import resumePdf from "./assets/resume.pdf";
+// Imported so the bundler emits it as static/media/resume.<contenthash>.pdf.
+// The hash changes whenever the file does, so a new resume is never served
+// from a stale browser or CDN cache. prebuild also copies it to
+// public/resume.pdf so the plain /resume.pdf link keeps resolving.
+const RESUME_URL = resumePdf;
 
 const ThemeContext = createContext();
 const useTheme = () => useContext(ThemeContext);

@@ -126,7 +126,9 @@ src/
   components/
     ExperienceVisuals.jsx   3D visuals per role
     ThemedIcons.jsx         theme-aware SVG icons
+  assets/resume.pdf         the resume - the only copy that gets edited
   visitorPing.js            one fetch to the worker, once per browser
+scripts/sync-resume.js      prebuild copy of the resume into public/
 visitor-worker/
   src/index.js              geo lookup, dedupe, email
   wrangler.toml             config (no secrets)
@@ -151,11 +153,29 @@ local runs never send email.
 | Script | |
 |---|---|
 | `npm start` | dev server with hot reload |
-| `npm run build` | production bundle to `build/` |
+| `npm run build` | production bundle to `build/` (runs `prebuild` first) |
 | `npm run deploy` | manual publish via `gh-pages` |
 | `npm test` | CRA test runner - currently only the unmodified starter test |
 
 Requires Node 18+.
+
+### Updating the resume
+
+Replace `src/assets/resume.pdf`. That's the whole job - don't touch
+`public/resume.pdf`.
+
+`App.js` imports the PDF rather than linking a static path, so the bundler emits
+it as `static/media/resume.<contenthash>.pdf`. The hash is derived from the file
+itself: it stays put across rebuilds, and changes the moment the resume does. A
+new resume can therefore never be served out of a stale browser or CDN cache -
+which is exactly what happens when a fixed `/resume.pdf` path gets updated in
+place.
+
+The plain `/resume.pdf` URL still resolves, because `npm run build` runs
+`prebuild` -> [`scripts/sync-resume.js`](scripts/sync-resume.js), which copies
+`src/assets/resume.pdf` into `public/` before CRA sweeps that folder into the
+build. That link may already be in someone's inbox, so it keeps working - it
+just has no cache-busting of its own, and is regenerated rather than edited.
 
 ---
 
