@@ -2617,7 +2617,7 @@ export default function Portfolio() {
               <div style={{ position: "relative" }}>
                 <TimelineCard
                   role="Forward Deployed AI Engineer Intern" company="ORIX"
-                  period="May 2026 - Present" location="Remote, USA"
+                  period="May 2026 - August 2026" location="Remote, USA"
                   tech="Azure AI Search · Azure AI Document Intelligence · Azure Logic Apps · Azure Functions · Azure Databricks · Databricks Genie · Python · SQL · RAG · LLMs"
                   bullets={[
                     "Partnered directly with operations, lending, and loan portfolio teams to understand business workflows, gather requirements, define edge cases, and own each AI product from discovery and architecture through demos, testing, feedback, and final delivery.",
