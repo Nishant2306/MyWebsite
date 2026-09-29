@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09090b" />
+    <title>Privacy Policy | Nishant Chaudhary</title>
+    <meta name="description" content="What nishcodes.com collects when you visit (very little), why, and how to get it removed." />
+    <link rel="canonical" href="https://nishcodes.com/privacy.html" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://nishcodes.com/privacy.html" />
+    <meta property="og:title" content="Privacy Policy | Nishant Chaudhary" />
+    <meta property="og:description" content="What nishcodes.com collects when you visit (very little), why, and how to get it removed." />
+    <meta property="og:image" content="https://nishcodes.com/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Syne:wght@800&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --bg: #09090b;
+        --surface: rgba(255, 255, 255, 0.02);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.68);
+        --text-muted: rgba(255, 255, 255, 0.4);
+        --accent: #00ffc8;
+        --accent-2: #7850ff;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f5f0;
+          --surface: rgba(255, 255, 255, 0.7);
+          --border: rgba(0, 0, 0, 0.08);
+          --text: #1a1a2e;
+          --text-secondary: rgba(0, 0, 0, 0.68);
+          --text-muted: rgba(0, 0, 0, 0.45);
+          --accent: #00997a;
+          --accent-2: #5a30cc;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.7;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 64px 16px 80px;
+      }
+      .back {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        text-decoration: none;
+      }
+      .back:hover { color: var(--accent); }
+      .eyebrow {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 40px 0 12px;
+      }
+      h1 {
+        font-family: "Syne", system-ui, sans-serif;
+        font-weight: 800;
+        font-size: clamp(32px, 8vw, 48px);
+        line-height: 1.1;
+        letter-spacing: -1px;
+        margin: 0 0 8px;
+      }
+      .updated {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0 0 32px;
+      }
+      .tldr {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-bottom: 40px;
+        color: var(--text-secondary);
+      }
+      .tldr strong { color: var(--text); }
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 40px 0 8px;
+      }
+      p, li { color: var(--text-secondary); font-size: 16px; }
+      ul { padding-left: 20px; }
+      li { margin-bottom: 6px; }
+      a { color: var(--accent); }
+      a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+      code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.9em;
+      }
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">&larr; nishcodes.com</a>
+
+      <p class="eyebrow">// Privacy</p>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: September 28, 2026</p>
+
+      <div class="tldr">
+        <strong>Short version:</strong> this is a personal portfolio. There are no cookies,
+        no ads, no trackers, and no accounts. The first time you visit, I get a short email
+        saying roughly where the visit came from, so I know someone looked. That's it.
+      </div>
+
+      <h2>What gets collected</h2>
+      <p>
+        When you open the site for the first time, your browser sends one small request to a
+        server I run on Cloudflare Workers. From that request, I receive an email with:
+      </p>
+      <ul>
+        <li>Your approximate location (city, region, country), estimated from your IP address by Cloudflare</li>
+        <li>Your network provider (for example, a university or ISP name)</li>
+        <li>A <strong>masked</strong> IP address, with the last part hidden (like <code>203.0.113.•••</code>)</li>
+        <li>Your browser, operating system, device type, language, and screen size</li>
+        <li>The page you landed on, the site that linked you here (if any), and the time</li>
+      </ul>
+      <p>
+        Your full IP address is never stored. To avoid emailing me twice about the same person,
+        the server keeps a one-way hash of your IP address and browser details, along with the
+        city, country, and date of the first visit.
+      </p>
+
+      <h2>What doesn't get collected</h2>
+      <ul>
+        <li>No cookies. Nothing that follows you to other sites.</li>
+        <li>No Google Analytics, ad pixels, or third-party trackers.</li>
+        <li>No names, emails, or anything you type. The site has no forms.</li>
+      </ul>
+      <p>
+        Your browser does save one small flag (<code>np:seen</code>) in local storage so it doesn't
+        repeat the request on later visits. It never leaves your device, and clearing your
+        browser data removes it.
+      </p>
+
+      <h2>Why</h2>
+      <p>
+        I like knowing when someone looks at my work, especially after I apply for a job or
+        share a link. The data isn't sold, shared, or used for advertising, and I'm the only
+        person who sees it.
+      </p>
+
+      <h2>Services involved</h2>
+      <ul>
+        <li><strong>GitHub Pages</strong> hosts the site. GitHub may keep standard server logs; see <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener noreferrer">GitHub's privacy statement</a>.</li>
+        <li><strong>Cloudflare Workers</strong> receives the one-time visit request.</li>
+        <li><strong>Resend</strong> delivers the notification email to me.</li>
+        <li><strong>Google Fonts</strong> serves the fonts, so your browser requests them from Google.</li>
+      </ul>
+
+      <h2>Opting out</h2>
+      <p>
+        Most ad blockers and privacy extensions block the visit request, and the site works
+        exactly the same without it. If you'd like any record of your visit deleted, email me at
+        <a href="mailto:nishantchaudhary0512@gmail.com">nishantchaudhary0512@gmail.com</a>
+        and I'll remove it.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If this changes, I'll update this page and the date at the top.
+      </p>
+
+      <footer>© 2026 Nishant Chaudhary · Bloomington, Indiana</footer>
+    </main>
+  </body>
+</html>

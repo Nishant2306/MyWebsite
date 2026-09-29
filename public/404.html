@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09090b" />
+    <title>404 - Page not found | Nishant Chaudhary</title>
+    <meta name="description" content="This page doesn't exist on nishcodes.com. Head back to Nishant Chaudhary's portfolio." />
+    <!-- Keep 404s out of search results. -->
+    <meta name="robots" content="noindex" />
+    <!--
+      GitHub Pages serves this file for any path that doesn't exist, at that
+      path - so every URL below must be absolute. It's plain HTML (not part of
+      the React bundle) so it renders instantly and never 404s itself.
+    -->
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Syne:wght@800&display=swap" rel="stylesheet" />
+
+    <script>
+      // Short, guessable URLs people might type. Redirect instead of 404ing.
+      (function () {
+        var shortcuts = {
+          "/resume": "/resume.pdf",
+          "/cv": "/resume.pdf",
+          "/linkedin": "https://www.linkedin.com/in/nishant-nishcodes/",
+          "/github": "https://github.com/Nishant2306",
+          "/contact": "/#contact",
+          "/projects": "/#projects",
+          "/experience": "/#experience",
+        };
+        var path = window.location.pathname.toLowerCase().replace(/\/+$/, "");
+        if (shortcuts[path]) window.location.replace(shortcuts[path]);
+      })();
+    </script>
+
+    <style>
+      :root {
+        --bg: #09090b;
+        --surface: rgba(255, 255, 255, 0.02);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(255, 255, 255, 0.18);
+        --text: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.6);
+        --text-muted: rgba(255, 255, 255, 0.35);
+        --accent: #00ffc8;
+        --accent-2: #7850ff;
+        --accent-strong: #00d4a0;
+        --on-accent: #09090b;
+        --grid: rgba(0, 255, 200, 0.03);
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f5f5f0;
+          --surface: rgba(255, 255, 255, 0.7);
+          --border: rgba(0, 0, 0, 0.08);
+          --border-hover: rgba(0, 0, 0, 0.2);
+          --text: #1a1a2e;
+          --text-secondary: rgba(0, 0, 0, 0.6);
+          --text-muted: rgba(0, 0, 0, 0.4);
+          --accent: #00997a;
+          --accent-2: #5a30cc;
+          --accent-strong: #00b38a;
+          --on-accent: #ffffff;
+          --grid: rgba(0, 153, 122, 0.05);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 60px 60px;
+        -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+        animation: gridShift 20s linear infinite;
+        pointer-events: none;
+      }
+      @keyframes gridShift { to { background-position: 60px 60px; } }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      main {
+        position: relative;
+        width: 100%;
+        max-width: 640px;
+        text-align: center;
+      }
+      .eyebrow {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 12px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 16px;
+      }
+      h1 {
+        font-family: "Syne", system-ui, sans-serif;
+        font-weight: 800;
+        font-size: clamp(96px, 26vw, 176px);
+        line-height: 1;
+        letter-spacing: -4px;
+        margin: 0;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .lede {
+        font-size: clamp(16px, 4vw, 19px);
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 16px auto 32px;
+        max-width: 460px;
+      }
+
+      .term {
+        text-align: left;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 13px;
+        line-height: 1.7;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 0 auto 32px;
+      }
+      .term-bar {
+        display: flex;
+        gap: 6px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .term-bar span {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: var(--border-hover);
+      }
+      .term-body { padding: 14px 16px; overflow-wrap: anywhere; }
+      .prompt { color: var(--accent); }
+      .muted { color: var(--text-muted); }
+      .err { color: #ff6b8b; }
+      .cursor {
+        display: inline-block;
+        width: 8px; height: 15px;
+        background: var(--accent);
+        vertical-align: -2px;
+        animation: blink 1s steps(1) infinite;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+      .btn {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 13px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        border: 1px solid var(--border-hover);
+        background: var(--surface);
+        color: var(--text-secondary);
+        transition: border-color 0.2s, color 0.2s, transform 0.2s;
+      }
+      .btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+      .btn.primary {
+        border: none;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: var(--on-accent);
+        font-weight: 600;
+        box-shadow: 0 0 30px rgba(0, 255, 200, 0.18);
+      }
+      .btn.primary:hover { color: var(--on-accent); }
+      .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+      @media (max-width: 480px) {
+        .term { font-size: 12px; }
+        .btn { flex: 1 1 100%; padding: 14px 20px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body::before, .cursor { animation: none; }
+        .btn { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">// Error</p>
+      <h1>404</h1>
+      <p class="lede">This page wandered off. It might have moved, or the link has a typo.</p>
+
+      <div class="term" aria-label="Terminal output">
+        <div class="term-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="term-body">
+          <div><span class="prompt">visitor@nishcodes:~$</span> cd <span id="path">/this-page</span></div>
+          <div class="err">cd: no such file or directory</div>
+          <div><span class="prompt">visitor@nishcodes:~$</span> <span class="cursor" aria-hidden="true"></span></div>
+        </div>
+      </div>
+
+      <nav class="actions" aria-label="Where to next">
+        <a class="btn primary" href="/">Back to home</a>
+        <a class="btn" href="/#projects">See projects</a>
+        <a class="btn" href="mailto:nishantchaudhary0512@gmail.com">Email me</a>
+      </nav>
+    </main>
+
+    <script>
+      // textContent, not innerHTML: the path comes from the URL.
+      var p = window.location.pathname;
+      try { p = decodeURIComponent(p); } catch (e) { /* malformed escape - show it raw */ }
+      document.getElementById("path").textContent = p.length > 60 ? p.slice(0, 57) + "..." : p;
+    </script>
+  </body>
+</html>

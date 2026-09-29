@@ -24,7 +24,8 @@
     />
     <meta property="og:image" content="https://nishcodes.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:height" content="674" />
+    <meta property="og:image:alt" content="Nishant Chaudhary's portfolio homepage: name, role, and links to LinkedIn, resume, and GitHub" />
     <meta property="og:site_name" content="nishcodes.com" />
     <meta property="og:locale" content="en_US" />
 
@@ -36,9 +37,49 @@
       content="Forward Deployed AI Engineer Intern at ORIX. MS CS at Indiana University. Turning business requirements into AI products: document intelligence, RAG, and natural-language analytics that deliver measurable impact."
     />
     <meta name="twitter:image" content="https://nishcodes.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Nishant Chaudhary's portfolio homepage: name, role, and links to LinkedIn, resume, and GitHub" />
 
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Paint the dark background immediately (no white flash) and style the boot loader. -->
+    <style>
+      html, body { background: #09090b; margin: 0; }
+      .boot {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 13px;
+        letter-spacing: 1px;
+      }
+      .boot-name {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #00ffc8, #7850ff);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .boot-prompt { color: #00ffc8; margin-right: 6px; }
+      .boot-cursor {
+        display: inline-block;
+        width: 7px;
+        height: 14px;
+        margin-left: 4px;
+        vertical-align: -2px;
+        background: #00ffc8;
+        animation: boot-blink 1s steps(1) infinite;
+      }
+      @keyframes boot-blink { 50% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .boot-cursor { animation: none; } }
+    </style>
 
     <script type="application/ld+json">
       {
@@ -164,6 +205,15 @@
         <li><a href="mailto:nishantchaudhary0512@gmail.com">nishantchaudhary0512@gmail.com</a></li>
       </ul>
     </noscript>
-    <div id="root"></div>
+    <!--
+      Shown while the JS bundle downloads (Three.js makes it hefty on slow
+      connections). React replaces everything inside #root on first render.
+    -->
+    <div id="root">
+      <div class="boot" role="status" aria-live="polite">
+        <div class="boot-name">Nishant Chaudhary</div>
+        <div class="boot-line"><span class="boot-prompt">~$</span> loading portfolio<span class="boot-cursor" aria-hidden="true"></span></div>
+      </div>
+    </div>
   </body>
 </html>

@@ -3268,7 +3268,10 @@ export default function Portfolio() {
             <div style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontSize: "11px", color: t.textMuted, letterSpacing: "1px",
-            }}>© 2026 Nishant Chaudhary</div>
+            }}>
+              © 2026 Nishant Chaudhary ·{" "}
+              <a href="/privacy.html" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: "3px" }}>Privacy</a>
+            </div>
             {!isMobile && (
               <div style={{
                 fontFamily: "'JetBrains Mono', monospace",
