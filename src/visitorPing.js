@@ -36,6 +36,9 @@ export default function pingVisitor() {
     referrer: document.referrer || '',
     language: navigator.language || '',
     screen: `${window.screen.width}x${window.screen.height}`,
+    // True in Selenium/Puppeteer/Playwright-driven browsers; the worker uses
+    // it to tag the email as a bot.
+    webdriver: navigator.webdriver === true,
   });
 
   // text/plain keeps this a "simple" request, so there's no CORS preflight.

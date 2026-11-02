@@ -3,7 +3,8 @@
 Emails `nishantchaudhary0512@gmail.com` the **first** time a person opens
 nishcodes.com. Repeat visits are silent.
 
-Each email is subject-lined `Visitor #47 - Bloomington, Indiana, US` and ends
+Each email is subject-lined `[Human] Visitor #47 - Bloomington, Indiana, US`
+(or `[Bot] ...`) and ends
 with the all-time unique-visitor total.
 
 - Runs on Cloudflare Workers (free tier), independent of GitHub Pages.
@@ -94,6 +95,9 @@ npx wrangler kv key put --binding VISITORS meta:unique-count 0
   and home IPs rotate. You'll get close, not exact.
 - **Geo is city-level** and VPN users will show the wrong city.
 - Crawlers and link unfurlers are filtered by user-agent in `src/index.js`.
+- Bots posing as real browsers still email you, tagged `[Bot]`. `detectBot()`
+  flags hosting/cloud networks (e.g. AWS), `navigator.webdriver`, and missing
+  browser headers; the email lists which signal fired. It's a best guess.
 - Ad blockers may block the request for some visitors; those visits go unseen.
 - KV entries never expire, so "unique" means all-time. Add `expirationTtl` to
   the `.put()` call if you'd rather it reset after N seconds.

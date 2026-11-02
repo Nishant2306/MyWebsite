@@ -20,6 +20,14 @@ const COUNT_KEY = 'meta:unique-count';
 const BOT_PATTERN =
   /bot|crawler|spider|crawling|slurp|preview|fetcher|scrape|monitor|curl|wget|python-requests|axios|headless|lighthouse|pingdom|uptime|facebookexternalhit|whatsapp|telegram|discord|slackbot|twitterbot|linkedinbot|embedly|quora link|bitlybot|vkshare|redditbot|applebot|semrush|ahrefs|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|perplexity/i;
 
+// Hosting and cloud networks. People browse from ISPs, mobile carriers and
+// offices; scripts run from these. Plain "Google LLC" and "Microsoft
+// Corporation" are left out on purpose: those also cover their corporate
+// offices, and a recruiter there shouldn't get labelled a bot. Cloudflare and
+// Akamai are left out too, since they carry iCloud Private Relay and WARP.
+const DATACENTER_PATTERN =
+  /amazon|\baws\b|google cloud|azure|digitalocean|linode|hetzner|\bovh|oracle cloud|alibaba|tencent|huawei cloud|vultr|choopa|contabo|scaleway|leaseweb|m247|hostinger|ionos|hostroyale|datacamp|cdn77|psychz|colocrossing|quadranet|zenlayer|hosting|datacenter|data center/i;
+
 export default {
   async fetch(request, env) {
     const cors = corsHeaders(request, env);
@@ -99,6 +107,7 @@ function buildVisit({ request, payload, ip, userAgent, visitorId, visitNumber, e
     visitorTimezone: cf.timezone || '',
     ...describeClient(userAgent),
     userAgent,
+    ...detectBot({ request, payload, userAgent, network: cf.asOrganization || '' }),
     page: cleanUrl(payload.path) || '/',
     referrer: cleanUrl(payload.referrer) || 'Direct / none',
     language: String(payload.language || '').slice(0, 35),
@@ -107,6 +116,37 @@ function buildVisit({ request, payload, ip, userAgent, visitorId, visitNumber, e
     localTime: formatTime(now, zone),
     zone,
   };
+}
+
+/**
+ * Best guess at whether a browser-looking visit is really automation. The
+ * obvious crawlers were already dropped by BOT_PATTERN; this catches headless
+ * browsers and scripts that pass themselves off as Chrome. Any one signal is
+ * enough, and the reasons go in the email so the call can be second-guessed.
+ */
+function detectBot({ request, payload, userAgent, network }) {
+  const reasons = [];
+  const headers = request.headers;
+
+  if (payload.webdriver === true) {
+    reasons.push('browser reports automation (navigator.webdriver)');
+  }
+  if (network && DATACENTER_PATTERN.test(network)) {
+    reasons.push(`hosting / cloud network (${network})`);
+  }
+  if (!headers.get('Accept-Language')) {
+    reasons.push('no Accept-Language header');
+  }
+  // Real Chromium browsers send client hints on HTTPS requests; plain HTTP
+  // clients copying a Chrome user-agent usually don't.
+  if (/Chrome\//.test(userAgent) && !headers.get('Sec-CH-UA')) {
+    reasons.push('claims Chrome but sends no client hints');
+  }
+  if (!payload.path) {
+    reasons.push('ping missing page details');
+  }
+
+  return { isBot: reasons.length > 0, botReasons: reasons };
 }
 
 /** Mask the host portion so the address stays useful but stops being an identifier. */
@@ -193,7 +233,7 @@ async function sendEmail(v, env) {
     body: JSON.stringify({
       from: env.EMAIL_FROM || 'Portfolio <onboarding@resend.dev>',
       to: [env.EMAIL_TO],
-      subject: `Visitor #${v.visitNumber} - ${location(v)}`,
+      subject: `[${v.isBot ? 'Bot' : 'Human'}] Visitor #${v.visitNumber} - ${location(v)}`,
       html: emailHtml(v),
     }),
   });
@@ -205,7 +245,12 @@ async function sendEmail(v, env) {
 }
 
 function emailHtml(v) {
+  const verdict = v.isBot
+    ? `<strong style="color:#b45309">Bot</strong> <span style="opacity:.6">· ${v.botReasons.join('; ')}</span>`
+    : '<strong style="color:#047857">Human</strong>';
+
   const rows = [
+    ['Verdict', verdict],
     ['Location', location(v)],
     ['Network', v.network],
     ['IP', v.ipIsMasked ? `${v.ip} <span style="opacity:.6">(masked)</span>` : v.ip],
@@ -234,7 +279,7 @@ function emailHtml(v) {
   <body style="margin:0;padding:24px;background:#f6f7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
     <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #e6e7eb;border-radius:12px;overflow:hidden">
       <div style="padding:20px 24px;border-bottom:1px solid #f0f0f3">
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280">New unique visitor</div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280">New unique visitor · ${v.isBot ? 'likely bot' : 'human'}</div>
         <div style="font-size:20px;font-weight:600;color:#111827;margin-top:4px">${location(v)}</div>
       </div>
       <div style="padding:8px 24px 20px">
