@@ -63,6 +63,12 @@ npx wrangler deploy
 
 This prints your worker URL, e.g. `https://visitor-notifier.nishant.workers.dev`.
 
+After this first deploy, pushing to `master` redeploys the worker automatically
+whenever something under `visitor-worker/` changes
+(`.github/workflows/deploy-worker.yml`). That needs two GitHub repo secrets:
+`CLOUDFLARE_API_TOKEN` (an "Edit Cloudflare Workers" token) and
+`CLOUDFLARE_ACCOUNT_ID`.
+
 ### 6. Point the site at it
 
 Put that URL in `ENDPOINT` at the top of [`../src/visitorPing.js`](../src/visitorPing.js),
